@@ -1,0 +1,9 @@
+message: You have reached the border.
+borders:
+    world:
+        distance: 1000
+        origin:
+            X: 0.0
+            Y: 0.0
+            Z: 0.0
+logLevel: CONFIG

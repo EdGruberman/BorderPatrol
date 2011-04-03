@@ -1,0 +1,4 @@
+name: SimpleBorder
+main: edgruberman.bukkit.simpleborder.Main
+version: %VERSION%
+author: EdGruberman (ed@rjump.com)
