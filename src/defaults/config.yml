@@ -1,4 +1,4 @@
-message: You have reached the border.
+﻿message: "You have reached the border."
 borders:
     world:
         distance: 1000

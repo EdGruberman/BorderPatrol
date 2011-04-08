@@ -10,27 +10,30 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
     
     @Override
     public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event) {
-        if (this.main.inBounds(event.getPlayer().getLocation())) return;
+        Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
+        if (border == null || border.isInside(event.getPlayer().getLocation().getX(), event.getPlayer().getLocation().getZ())) return;
         
-        this.main.teleportBack(event.getPlayer(), null, event.getPlayer().getLocation());
+        this.main.teleportBack(event.getPlayer(), event.getPlayer().getLocation(), border.getInside(event.getPlayer().getLocation()));
         return;
     }
     
     @Override
     public void onPlayerMove(org.bukkit.event.player.PlayerMoveEvent event) {
-        if (this.main.inBounds(event.getTo())) return;
+        if (event.isCancelled()) return;
+        Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
+        if (border == null || border.isInside(event.getTo().getX(), event.getTo().getZ())) return;
         
-        event.setCancelled(true);
-        this.main.teleportBack(event.getPlayer(), event.getFrom(), event.getTo());
+        event.setTo(this.main.teleportBack(event.getPlayer(), event.getTo().clone(), border.getInside(event.getTo())));
         return;
     }
     
     @Override
     public void onPlayerTeleport(org.bukkit.event.player.PlayerTeleportEvent event) {
-        if (this.main.inBounds(event.getTo())) return;
+        if (event.isCancelled()) return;
+        Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
+        if (border == null || border.isInside(event.getTo().getX(), event.getTo().getZ())) return;
         
-        event.setCancelled(true);
-        this.main.teleportBack(event.getPlayer(), event.getFrom(), event.getTo());
+        event.setTo(this.main.teleportBack(event.getPlayer(), event.getTo().clone(), border.getInside(event.getTo())));
         return;
     }
 }

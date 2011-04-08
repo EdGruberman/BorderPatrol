@@ -88,7 +88,7 @@
         <antcall target="JAR Export"/>
     </target>
 
-    <target name="Full Release (#.#.#)">
+    <target name="Release (#.#.#)">
         <propertyfile file="version.properties">
             <entry key="version.type"     value=""/>
             <entry key="version.build"    value=""/>
