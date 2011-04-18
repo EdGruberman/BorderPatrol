@@ -48,7 +48,7 @@ public class Border {
      * @param Z Z Axis value to check if it is inside the border.
      * @return true if Location is inside the border; Otherwise false.
      */
-    public boolean isInside(double X, double Z) {
+    public boolean contains(double X, double Z) {
         return !(X < this.minX || X > this.maxX || Z < this.minZ || Z > this.maxZ);
     }
     

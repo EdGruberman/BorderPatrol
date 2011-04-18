@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.1
+Created-By: 19.1-b02 (Sun Microsystems Inc.)
+
+Name: edgruberman/bukkit/simpleborder/
+Specification-Title: SimpleBorder
+Specification-Version: 1.0
+Specification-Vendor: EdGruberman (ed@rjump.com)
+Implementation-Title: edgruberman.bukkit.simpleborder
+Implementation-Version: 0rc4
+Implementation-Vendor: EdGruberman (ed@rjump.com)
+Class-Path: 
+

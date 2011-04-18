@@ -3,7 +3,6 @@ package edgruberman.bukkit.simpleborder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -11,32 +10,40 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.bukkit.util.config.ConfigurationNode;
 
-import edgruberman.bukkit.simpleborder.Communicator.MessageLevel;
+import edgruberman.bukkit.simpleborder.MessageManager;
+import edgruberman.bukkit.simpleborder.MessageManager.MessageLevel;
 
 public class Main extends org.bukkit.plugin.java.JavaPlugin {
 
-    public Communicator communicator = new Communicator(this);
+    public static MessageManager messageManager = null;
+    
+    private static final String DEFAULT_LOG_LEVEL       = Integer.toString(MessageLevel.INFO.level.intValue());
+    private static final String DEFAULT_SEND_LEVEL      = Integer.toString(MessageLevel.INFO.level.intValue());
+    private static final String DEFAULT_BROADCAST_LEVEL = Integer.toString(MessageLevel.INFO.level.intValue());
     
     private String message = "";
     private Map<String, Border> borders = Collections.synchronizedMap(new HashMap<String, Border>());
 	
     public void onEnable() {
-        this.communicator.log("Version " + this.getDescription().getVersion());
+        Main.messageManager = new MessageManager(this);
+        Main.messageManager.log("Version " + this.getDescription().getVersion());
         
         Configuration.load(this);
-        this.communicator.setLogLevel(Level.parse(this.getConfiguration().getString("logLevel", "INFO")));
-        this.communicator.setMessageLevel(Level.parse(this.getConfiguration().getString("messageLevel", "INFO")));
+        Main.messageManager.setLogLevel(MessageLevel.parse(      this.getConfiguration().getString("logLevel",       Main.DEFAULT_LOG_LEVEL)));
+        Main.messageManager.setSendLevel(MessageLevel.parse(     this.getConfiguration().getString("sendLevel",      Main.DEFAULT_SEND_LEVEL)));
+        Main.messageManager.setBroadcastLevel(MessageLevel.parse(this.getConfiguration().getString("broadcastLevel", Main.DEFAULT_BROADCAST_LEVEL)));
+        
         this.message = this.getConfiguration().getString("message");
         this.loadBorders();
         
         // Only register events to listen for if a border is defined.
         if (this.getConfiguration().getNodes("borders").size() > 0) { this.registerEvents(); }
         
-        this.communicator.log("Plugin Enabled");
+        Main.messageManager.log("Plugin Enabled");
     }
     
     public void onDisable() {
-        this.communicator.log("Plugin Disabled");
+        Main.messageManager.log("Plugin Disabled");
     }
     
     private void registerEvents() {
@@ -49,6 +56,8 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
     }
     
     private void loadBorders() {
+        this.borders.clear();
+        
         for (Map.Entry<String, ConfigurationNode> borderEntry : this.getConfiguration().getNodes("borders").entrySet()) {
             if (borderEntry.getValue().getInt("distance", 0) == 0) continue;
             Border border = new Border(
@@ -59,7 +68,7 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
                 , borderEntry.getValue().getInt("distance", 0)
             );
             this.borders.put(borderEntry.getKey(), border);
-            this.communicator.log(Level.CONFIG, border.getDescription());
+            Main.messageManager.log(MessageLevel.CONFIG, border.getDescription());
         }
     }
     
@@ -79,24 +88,24 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
             returnTo = player.getWorld().getSpawnLocation();
             
             // Use border origin if player's spawn is still outside border.
-            if (!this.getBorder(returnTo.getWorld().getName()).isInside(returnTo.getX(), returnTo.getZ())) {
+            if (!this.getBorder(returnTo.getWorld().getName()).contains(returnTo.getX(), returnTo.getZ())) {
                 returnTo = this.getBorder(returnTo.getWorld().getName()).getOrigin();
             }
         }
         
         // Debug details for log.
-        if (this.communicator.isLogLevel(Level.FINE)) {
+        if (Main.messageManager.isLogLevel(MessageLevel.FINE)) {
             String breachedBy = player.getName();
             if (player.isInsideVehicle()) { breachedBy += " riding " + player.getVehicle().toString().substring("Craft".length()); }
-            this.communicator.log(
-                  Level.FINE
+            Main.messageManager.log(
+                  MessageLevel.FINE
                 , "Border reached in " + breachedAt.getWorld().getName() 
                     + " by " + breachedBy + " at X=" + breachedAt.getBlockX() + ",Y=" + breachedAt.getBlockY() + ",Z=" + breachedAt.getBlockZ()
                     + "; Returning to X=" + returnTo.getBlockX() + ",Y=" + returnTo.getBlockY() + ",Z=" + returnTo.getBlockZ() + "."
             );
-            if (this.communicator.isLogLevel(Level.FINER)) {
-                this.communicator.log(
-                        Level.FINER
+            if (Main.messageManager.isLogLevel(MessageLevel.FINER)) {
+                Main.messageManager.log(
+                        MessageLevel.FINER
                       , "X=" + breachedAt.getX() + ",Y=" + breachedAt.getY() + ",Z=" + breachedAt.getZ()
                           + " > X=" + returnTo.getX() + ",Y=" + returnTo.getY() + ",Z=" + returnTo.getZ()
                 );
@@ -104,7 +113,7 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
         }
         
         // Indicate to player that they have reached the border.
-        if (this.message != "") this.communicator.sendMessage(player, this.message, MessageLevel.SEVERE);
+        if (this.message != "") Main.messageManager.send(player, MessageLevel.SEVERE, this.message);
         
         // Send player back to inside the border.
         if (player.isInsideVehicle()) {

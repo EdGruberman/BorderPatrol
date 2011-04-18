@@ -4,7 +4,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
+
+import edgruberman.bukkit.simpleborder.MessageManager.MessageLevel;
 
 public class Configuration {
     
@@ -33,7 +34,7 @@ public class Configuration {
                 in.close();
                 out.close();
             } catch (java.io.IOException e) {
-                main.communicator.log(Level.SEVERE, "Unable to create default configuration file.", e);
+                Main.messageManager.log(MessageLevel.SEVERE, "Unable to create default configuration file.", e);
             }
         }
         
