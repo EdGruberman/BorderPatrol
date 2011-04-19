@@ -17,6 +17,8 @@ import org.bukkit.plugin.Plugin;
  * Private sends use bright colors to attract attention from the targeted recipient.</br>
  * Public broadcasts use the same colors to more easily associate the same type of message content but darker shades to demonstrate a public audience was targeted.</br>
  * 
+ * TODO Raise errors for setting levels to null.
+ * 
  * @author EdGruberman (ed@rjump.com)
  */
 public final class MessageManager {
@@ -297,19 +299,19 @@ public final class MessageManager {
         }
         
         public static MessageLevel parse(String name) {
-                 if (name.toUpperCase().equals("SEVERE"))  { return MessageLevel.SEVERE; }
-            else if (name.toUpperCase().equals("WARNING")) { return MessageLevel.WARNING; }
-            else if (name.toUpperCase().equals("NOTICE"))  { return MessageLevel.NOTICE; }
-            else if (name.toUpperCase().equals("INFO"))    { return MessageLevel.INFO; }
-            else if (name.toUpperCase().equals("STATUS"))  { return MessageLevel.STATUS; }
-            else if (name.toUpperCase().equals("EVENT"))   { return MessageLevel.EVENT; }
-            else if (name.toUpperCase().equals("CONFIG"))  { return MessageLevel.CONFIG; }
-            else if (name.toUpperCase().equals("RIGHTS"))  { return MessageLevel.RIGHTS; }
-            else if (name.toUpperCase().equals("FINE"))    { return MessageLevel.FINE; }
-            else if (name.toUpperCase().equals("FINER"))   { return MessageLevel.FINER; }
-            else if (name.toUpperCase().equals("FINEST"))  { return MessageLevel.FINEST; }
-            else if (name.toUpperCase().equals("OFF"))     { return MessageLevel.OFF; }
-            else if (name.toUpperCase().equals("ALL"))     { return MessageLevel.ALL; }
+                 if (name.toUpperCase().equals("SEVERE")  || name.equals("1000")){ return MessageLevel.SEVERE; }
+            else if (name.toUpperCase().equals("WARNING") || name.equals("900")) { return MessageLevel.WARNING; }
+            else if (name.toUpperCase().equals("NOTICE")  || name.equals("850")) { return MessageLevel.NOTICE; }
+            else if (name.toUpperCase().equals("INFO")    || name.equals("800")) { return MessageLevel.INFO; }
+            else if (name.toUpperCase().equals("STATUS")  || name.equals("775")) { return MessageLevel.STATUS; }
+            else if (name.toUpperCase().equals("EVENT")   || name.equals("750")) { return MessageLevel.EVENT; }
+            else if (name.toUpperCase().equals("CONFIG")  || name.equals("700")) { return MessageLevel.CONFIG; }
+            else if (name.toUpperCase().equals("RIGHTS")  || name.equals("600")) { return MessageLevel.RIGHTS; }
+            else if (name.toUpperCase().equals("FINE")    || name.equals("500")) { return MessageLevel.FINE; }
+            else if (name.toUpperCase().equals("FINER")   || name.equals("400")) { return MessageLevel.FINER; }
+            else if (name.toUpperCase().equals("FINEST")  || name.equals("300")) { return MessageLevel.FINEST; }
+            else if (name.toUpperCase().equals("OFF")     || name.equals(Integer.toString(Integer.MAX_VALUE))) { return MessageLevel.OFF; }
+            else if (name.toUpperCase().equals("ALL")     || name.equals(Integer.toString(Integer.MIN_VALUE))) { return MessageLevel.ALL; }
             return null;
         }
     }
