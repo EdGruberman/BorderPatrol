@@ -19,23 +19,8 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         return;
     }
     
-    //TODO Detecting when player is teleporting and ignore the PlayerMoveEvent for that player until teleport is complete.
-    //     This will cause duplicate border reached messages when a player teleports outside the border (default spawn, tp, etc).
     @Override
     public void onPlayerMove(org.bukkit.event.player.PlayerMoveEvent event) {
-        if (event.isCancelled()) return;
-        
-        if (!this.main.isEnabled()) return;
-        
-        Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
-        if (border == null || border.contains(event.getTo().getX(), event.getTo().getZ())) return;
-        
-        event.setTo(this.main.teleportBack(event.getPlayer(), event.getTo().clone(), border.getInside(event.getTo())));
-        return;
-    }
-    
-    @Override
-    public void onPlayerTeleport(org.bukkit.event.player.PlayerTeleportEvent event) {
         if (event.isCancelled()) return;
         
         if (!this.main.isEnabled()) return;

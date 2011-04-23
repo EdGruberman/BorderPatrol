@@ -50,9 +50,8 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
         PlayerListener playerListener = new PlayerListener(this);
         
         org.bukkit.plugin.PluginManager pluginManager = this.getServer().getPluginManager();
-        pluginManager.registerEvent(Event.Type.PLAYER_MOVE    , playerListener,  Event.Priority.High, this);
-        pluginManager.registerEvent(Event.Type.PLAYER_TELEPORT, playerListener,  Event.Priority.High, this);
-        pluginManager.registerEvent(Event.Type.PLAYER_JOIN    , playerListener,  Event.Priority.High, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_MOVE    , playerListener,  Event.Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_JOIN    , playerListener,  Event.Priority.Normal, this);
     }
     
     private void loadBorders() {
