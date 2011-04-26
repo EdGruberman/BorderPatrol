@@ -13,9 +13,14 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         if (!this.main.isEnabled()) return;
         
         Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
-        if (border == null || border.contains(event.getPlayer().getLocation().getX(), event.getPlayer().getLocation().getZ())) return;
+        if (border == null || border.contains(event.getPlayer().getLocation().getBlockX(), event.getPlayer().getLocation().getBlockZ()))
+            return;
         
-        this.main.teleportBack(event.getPlayer(), event.getPlayer().getLocation(), border.getInside(event.getPlayer().getLocation()));
+        this.main.teleportBack(
+                  event.getPlayer()
+                , event.getPlayer().getLocation()
+                , border.getInside(event.getPlayer().getLocation())
+        );
         return;
     }
     
@@ -26,9 +31,14 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         if (!this.main.isEnabled()) return;
         
         Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
-        if (border == null || border.contains(event.getTo().getX(), event.getTo().getZ())) return;
+        if (border == null || border.contains(event.getTo().getBlockX(), event.getTo().getBlockZ()))
+            return;
         
-        event.setTo(this.main.teleportBack(event.getPlayer(), event.getTo().clone(), border.getInside(event.getTo())));
+        event.setTo(
+                  this.main.teleportBack(event.getPlayer()
+                , event.getTo()
+                , border.getInside(event.getTo()))
+        );
         return;
     }
 }

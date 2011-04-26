@@ -41,6 +41,8 @@ public class WorldUtility {
         , Material.SUGAR_CANE_BLOCK
         , Material.DIODE_BLOCK_OFF
         , Material.DIODE_BLOCK_ON
+        , Material.POWERED_RAIL
+        , Material.DETECTOR_RAIL
     }));
     
     /**

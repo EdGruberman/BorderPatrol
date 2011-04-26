@@ -7,17 +7,17 @@ import org.bukkit.block.Block;
 public class Border {
     
     private World world;
-    private double originX;
-    private double originY;
-    private double originZ;
+    private int originX;
+    private int originY;
+    private int originZ;
     private int distance;
     
-    private double minX;
-    private double maxX;
-    private double minZ;
-    private double maxZ;
+    private int minX;
+    private int maxX;
+    private int minZ;
+    private int maxZ;
     
-    public Border(World world, double originX, double originY, double originZ, int distance) {
+    public Border(World world, int originX, int originY, int originZ, int distance) {
         this.world = world;
         this.originX = originX;
         this.originY = originY;
@@ -38,43 +38,45 @@ public class Border {
             + ",Z=" + this.originZ;
     }
     
-    public Location getOrigin() {
-        return new Location(this.world, this.originX, this.originY, this.originZ);
+    public Block getOrigin() {
+        return this.world.getBlockAt(this.originX, this.originY, this.originZ);
     }
     
     /**
      * Determines if location is defined as being within the border or not.
+     * 
      * @param X X Axis value to check if it is inside the border.
      * @param Z Z Axis value to check if it is inside the border.
      * @return true if Location is inside the border; Otherwise false.
      */
-    public boolean contains(double X, double Z) {
+    public boolean contains(int X, int Z) {
         return !(X < this.minX || X > this.maxX || Z < this.minZ || Z > this.maxZ);
     }
     
     /**
-     * Returns the closest location to the provided location just inside the border that is safe for a player to occupy. 
-     * @param location
+     * Returns the closest block to the provided target just inside the border that is safe for a player to occupy.
+     * 
+     * @param target Location to get as close as possible to but still within border.
      * @return
-     */
-    public Location getInside(Location location) {
+     */    
+    public Location getInside(Location target) {
         
-        if (location.getX() <= this.minX)
-            location.setX(this.minX + 3);
-        else if (location.getX() >= this.maxX)
-            location.setX(this.maxX - 3);
+        if (target.getX() <= this.minX)
+            target.setX(this.minX + 3);
+        else if (target.getX() >= this.maxX)
+            target.setX(this.maxX - 3);
         
-        if (location.getZ() <= this.minZ)
-            location.setZ(this.minZ + 3);
-        else if (location.getZ() >= this.maxZ)
-            location.setZ(this.maxZ - 3);
+        if (target.getZ() <= this.minZ)
+            target.setZ(this.minZ + 3);
+        else if (target.getZ() >= this.maxZ)
+            target.setZ(this.maxZ - 3);
 
-        Block block = WorldUtility.getSafeY(location.getBlock());
+        Block block = WorldUtility.getSafeY(target.getBlock());
         if (block == null) return null;
 
-        location.setX(block.getX() + 0.5);
-        location.setY(block.getY());
-        location.setZ(block.getZ() + 0.5);
-        return location;
+        target.setX(block.getX() + 0.5);
+        target.setY(block.getY());
+        target.setZ(block.getZ() + 0.5);
+        return target;
     }
 }

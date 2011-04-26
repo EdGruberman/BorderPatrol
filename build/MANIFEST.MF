@@ -4,10 +4,10 @@ Created-By: 19.1-b02 (Sun Microsystems Inc.)
 
 Name: edgruberman/bukkit/simpleborder/
 Specification-Title: SimpleBorder
-Specification-Version: 1.0
+Specification-Version: 1.1
 Specification-Vendor: EdGruberman (ed@rjump.com)
 Implementation-Title: edgruberman.bukkit.simpleborder
-Implementation-Version: 0rc13
+Implementation-Version: 0rc1
 Implementation-Vendor: EdGruberman (ed@rjump.com)
 Class-Path: 
 
