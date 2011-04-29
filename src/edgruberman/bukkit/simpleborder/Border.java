@@ -60,23 +60,24 @@ public class Border {
      * @return
      */    
     public Location getInside(Location target) {
+        Location inside = target.clone();
         
-        if (target.getX() <= this.minX)
-            target.setX(this.minX + 3);
-        else if (target.getX() >= this.maxX)
-            target.setX(this.maxX - 3);
+        if (inside.getX() <= this.minX)
+            inside.setX(this.minX + 3);
+        else if (inside.getX() >= this.maxX)
+            inside.setX(this.maxX - 3);
         
-        if (target.getZ() <= this.minZ)
-            target.setZ(this.minZ + 3);
-        else if (target.getZ() >= this.maxZ)
-            target.setZ(this.maxZ - 3);
+        if (inside.getZ() <= this.minZ)
+            inside.setZ(this.minZ + 3);
+        else if (inside.getZ() >= this.maxZ)
+            inside.setZ(this.maxZ - 3);
 
-        Block block = WorldUtility.getSafeY(target.getBlock());
+        Block block = WorldUtility.getSafeY(inside.getBlock());
         if (block == null) return null;
 
-        target.setX(block.getX() + 0.5);
-        target.setY(block.getY());
-        target.setZ(block.getZ() + 0.5);
-        return target;
+        inside.setX(block.getX() + 0.5);
+        inside.setY(block.getY());
+        inside.setZ(block.getZ() + 0.5);
+        return inside;
     }
 }

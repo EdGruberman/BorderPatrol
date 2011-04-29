@@ -99,8 +99,8 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
             Main.messageManager.log(
                       MessageLevel.FINE
                     , "Border reached in " + breachedAt.getWorld().getName() 
-                        + " by " + breachedBy + " at x: " + breachedAt.getX() + " y: " + breachedAt.getY() + " z: " + breachedAt.getZ()
-                        + "; Returning to x: " + returnTo.getX() + " y: " + returnTo.getY() + " z: " + returnTo.getZ()
+                        + " by " + breachedBy + " at x: " + breachedAt.getBlockX() + " y: " + breachedAt.getBlockY() + " z: " + breachedAt.getBlockZ()
+                        + "; Returning to x: " + returnTo.getBlockX() + " y: " + returnTo.getBlockY() + " z: " + returnTo.getBlockZ()
             );
         }
         
