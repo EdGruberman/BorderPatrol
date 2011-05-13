@@ -6,4 +6,5 @@ borders:
             x: 0
             y: 0
             z: 0
-logLevel: CONFIG
+level:
+    log: CONFIG

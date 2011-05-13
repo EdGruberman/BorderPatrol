@@ -9,27 +9,24 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.bukkit.util.config.ConfigurationNode;
 
-import edgruberman.bukkit.simpleborder.MessageManager;
-import edgruberman.bukkit.simpleborder.MessageManager.MessageLevel;
+import edgruberman.bukkit.messagemanager.MessageLevel;
+import edgruberman.bukkit.messagemanager.MessageManager;
 
 public class Main extends org.bukkit.plugin.java.JavaPlugin {
 
-    public static MessageManager messageManager = null;
-    
-    private static final String DEFAULT_LOG_LEVEL  = "INFO";
-    private static final String DEFAULT_SEND_LEVEL = "INFO";
+    public static MessageManager messageManager;
     
     private String message = "";
     private Map<String, Border> borders = new HashMap<String, Border>();
+    
+    public void onLoad() {
+        Configuration.load(this);
+    }
 	
     public void onEnable() {
         Main.messageManager = new MessageManager(this);
         Main.messageManager.log("Version " + this.getDescription().getVersion());
-        
-        Configuration.load(this);
-        Main.messageManager.setLogLevel(MessageLevel.parse( this.getConfiguration().getString("logLevel",  Main.DEFAULT_LOG_LEVEL)));
-        Main.messageManager.setSendLevel(MessageLevel.parse(this.getConfiguration().getString("sendLevel", Main.DEFAULT_SEND_LEVEL)));
-        
+                
         this.message = this.getConfiguration().getString("message");
         this.loadBorders();
         
@@ -41,6 +38,7 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
     
     public void onDisable() {
         Main.messageManager.log("Plugin Disabled");
+        Main.messageManager = null;
     }
     
     private void registerEvents() {

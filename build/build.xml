@@ -15,6 +15,7 @@
     <path id="classpath">
         <pathelement path="${lib}"/>
         <pathelement location="../../bukkit.jar"/>
+        <pathelement location="../../MessageManager.jar"/>
     </path>
 
     <target name="JAR Export" depends="Clean">

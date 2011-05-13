@@ -1,4 +1,5 @@
 name: SimpleBorder
-main: edgruberman.bukkit.simpleborder.Main
 version: %VERSION%
+depend: [MessageManager]
+main: edgruberman.bukkit.simpleborder.Main
 author: EdGruberman (ed@rjump.com)
