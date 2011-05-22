@@ -9,31 +9,35 @@
         
     <property name="src" location="../src"/>
     <property name="lib" location="../lib"/>
+    <property name="lib-shared" location="../../Shared/lib"/>
     <property name="dist" location="../dist"/>
     <property name="stage" location="../stage"/>
 
     <path id="classpath">
-        <pathelement path="${lib}"/>
-        <pathelement location="../../bukkit.jar"/>
-        <pathelement location="../../MessageManager.jar"/>
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${lib-shared}">
+            <include name="*.jar"/>
+        </fileset>
     </path>
 
     <target name="JAR Export" depends="Clean">
-        <mkdir dir="${stage}"/>
-        <javac srcdir="${src}" destdir="${stage}" encoding="iso-8859-1">
+        <mkdir dir="${stage}/jar"/>
+        <javac srcdir="${src}" destdir="${stage}/jar" encoding="utf-8">
             <classpath refid="classpath"/>
         </javac>
 
-        <copy file="${src}/plugin.yml" tofile="${stage}/plugin.yml"/>
+        <copy file="${src}/plugin.yml" tofile="${stage}/jar/plugin.yml"/>
         <property file="version.properties"/>
         <property name="version" value="${version.major}.${version.minor}.${version.revision}${version.type}${version.build}"/>
-        <replace file="${stage}/plugin.yml" token="%VERSION%" value="${version}"/>
-        <mkdir dir="${stage}/defaults"/>
-        <copy todir="${stage}/defaults">
+        <replace file="${stage}/jar/plugin.yml" token="%VERSION%" value="${version}"/>
+        <mkdir dir="${stage}/jar/defaults"/>
+        <copy todir="${stage}/jar/defaults">
             <fileset dir="${src}/defaults"/>
         </copy>
         
-        <manifest file="MANIFEST.MF">
+        <manifest file="${stage}/MANIFEST.MF">
             <section name="${implementation-name}">
                 <attribute name="Specification-Title" value="${ant.project.name}"/>
                 <attribute name="Specification-Version" value="${version.major}.${version.minor}"/>
@@ -46,7 +50,7 @@
         </manifest>
 
         <mkdir dir="${dist}"/>
-        <jar basedir="${stage}" jarfile="${dist}/${ant.project.name}.jar" manifest="MANIFEST.MF"/>
+        <jar basedir="${stage}/jar/" jarfile="${dist}/${ant.project.name}.jar" manifest="${stage}/MANIFEST.MF"/>
         <echo message="Exported v${version} to ${dist}/${ant.project.name}.jar"/>
     </target>
 

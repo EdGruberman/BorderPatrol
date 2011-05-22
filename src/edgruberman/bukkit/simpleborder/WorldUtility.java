@@ -75,7 +75,7 @@ public class WorldUtility {
         int bottom = 0, top = 127;
         
         Block below = block, above = block;
-        while (below.getY() > bottom || above.getY() < top) {
+        while ((below != null && below.getY() > bottom) || (above != null && above.getY() < top)) {
             if (below != null) {
               if (isSafe(below)) return below;
             }
