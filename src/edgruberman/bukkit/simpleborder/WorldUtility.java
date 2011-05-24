@@ -68,6 +68,7 @@ public class WorldUtility {
     
     /**
      * Find the closest safe block for a player to occupy along the Y axis.
+     * 
      * @param location Initial location to start searching up and down from.
      * @return Location that is safe for a player to occupy.
      */
@@ -76,23 +77,28 @@ public class WorldUtility {
         
         Block below = block, above = block;
         while ((below != null && below.getY() > bottom) || (above != null && above.getY() < top)) {
+            
+            if (below != null && isSafe(below)) return below;
+            
+            if (above != null && above != below && isSafe(above)) return above;
+            
+            // Get next block down to check, unless we've run out of blocks below already.
             if (below != null) {
-              if (isSafe(below)) return below;
+                if (below.getY() > bottom)
+                    below = below.getRelative(BlockFace.DOWN);
+                else
+                    // No more blocks below.
+                    below = null;
             }
             
-            if (above != null && above != below) {
-                if (isSafe(above)) return above;
+            // Get next block above to check, unless we've run out of blocks above already.
+            if (above != null) {
+                if (above.getY() < top)
+                    above = above.getRelative(BlockFace.UP);
+                else
+                    // No more blocks above.
+                    above = null;
             }
-            
-            if (below.getY() > bottom)
-                below = below.getRelative(BlockFace.DOWN);
-            else
-                below = null;
-            
-            if (above.getY() < top)
-                above = above.getRelative(BlockFace.UP);
-            else
-                above = null;
         }
         
         return null;
@@ -100,6 +106,7 @@ public class WorldUtility {
     
     /**
      * Check if the block itself and the block above it are safe containers while the block below it is also safe support.
+     * 
      * @param block Block to check.
      * @return True if block is a safe block to teleport player to; Otherwise false.
      */
@@ -114,6 +121,7 @@ public class WorldUtility {
     
     /**
      * Determines if a block is safe for a player to occupy.
+     * 
      * @param block Block to check.
      * @return True if block is safe for a player to occupy; Otherwise false.
      */
@@ -123,6 +131,7 @@ public class WorldUtility {
 
     /**
      * Block will support a player standing on it safely.
+     * 
      * @param block Block to check.
      * @return True if block is safe.
      */
