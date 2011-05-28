@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
@@ -52,10 +53,18 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
     private void loadBorders() {
         this.borders.clear();
         
+        World world;
         for (Map.Entry<String, ConfigurationNode> borderEntry : this.getConfiguration().getNodes("borders").entrySet()) {
             if (borderEntry.getValue().getInt("distance", 0) == 0) continue;
+            
+            world = this.getServer().getWorld(borderEntry.getKey());
+            if (world == null) {
+                Main.messageManager.log(MessageLevel.WARNING, "Unable to define border for \"" + borderEntry.getKey() + "\"; World not found.");
+                continue;
+            }
+            
             Border border = new Border(
-                      this.getServer().getWorld(borderEntry.getKey())
+                      world
                     , borderEntry.getValue().getInt("origin.x", 0)
                     , borderEntry.getValue().getInt("origin.y", 0)
                     , borderEntry.getValue().getInt("origin.z", 0)
