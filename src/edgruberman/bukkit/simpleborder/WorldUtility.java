@@ -43,6 +43,8 @@ public class WorldUtility {
         , Material.DIODE_BLOCK_ON
         , Material.POWERED_RAIL
         , Material.DETECTOR_RAIL
+        , Material.LONG_GRASS
+        , Material.DEAD_BUSH
     }));
     
     /**
@@ -62,6 +64,7 @@ public class WorldUtility {
         , Material.LAVA
         , Material.STATIONARY_LAVA
         , Material.CACTUS
+        , Material.FIRE
       }));
     
     private WorldUtility() {}
