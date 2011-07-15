@@ -12,27 +12,29 @@ import org.bukkit.util.config.ConfigurationNode;
 
 import edgruberman.bukkit.messagemanager.MessageLevel;
 import edgruberman.bukkit.messagemanager.MessageManager;
+import edgruberman.bukkit.messagemanager.channels.Channel;
 
 public class Main extends org.bukkit.plugin.java.JavaPlugin {
 
-    public static MessageManager messageManager;
+    static ConfigurationFile configurationFile;
+    static MessageManager messageManager;
     
     private String message = "";
     private Map<String, Border> borders = new HashMap<String, Border>();
     
     public void onLoad() {
-        Configuration.load(this);
+        Main.configurationFile = new ConfigurationFile(this);
+        Main.configurationFile.load();
+        
+        Main.messageManager = new MessageManager(this);
+        Main.messageManager.log("Version " + this.getDescription().getVersion());
     }
 	
     public void onEnable() {
-        Main.messageManager = new MessageManager(this);
-        Main.messageManager.log("Version " + this.getDescription().getVersion());
-                
         this.message = this.getConfiguration().getString("message");
         this.loadBorders();
         
-        // Only register events to listen for if a border is defined.
-        if (this.getConfiguration().getNodes("borders").size() > 0) { this.registerEvents(); }
+        this.registerEvents();
         
         Main.messageManager.log("Plugin Enabled");
     }
@@ -59,7 +61,7 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
             
             world = this.getServer().getWorld(borderEntry.getKey());
             if (world == null) {
-                Main.messageManager.log(MessageLevel.WARNING, "Unable to define border for \"" + borderEntry.getKey() + "\"; World not found.");
+                Main.messageManager.log("Unable to define border for \"" + borderEntry.getKey() + "\"; World not found.", MessageLevel.WARNING);
                 continue;
             }
             
@@ -71,7 +73,7 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
                     , borderEntry.getValue().getInt("distance", 0)
             );
             this.borders.put(borderEntry.getKey(), border);
-            Main.messageManager.log(MessageLevel.CONFIG, border.getDescription());
+            Main.messageManager.log(border.getDescription(), MessageLevel.CONFIG);
         }
     }
     
@@ -100,19 +102,19 @@ public class Main extends org.bukkit.plugin.java.JavaPlugin {
         if (player.isInsideVehicle()) returnTo.setY(returnTo.getY() + 1);
         
         // Debug details for log.
-        if (Main.messageManager.isLogLevel(MessageLevel.FINE)) {
+        if (Main.messageManager.isLevel(Channel.Type.LOG, MessageLevel.FINE)) {
             String breachedBy = player.getName();
             if (player.isInsideVehicle()) { breachedBy += " riding " + player.getVehicle().toString().substring("Craft".length()); }
             Main.messageManager.log(
-                      MessageLevel.FINE
-                    , "Border reached in " + breachedAt.getWorld().getName() 
+                    "Border reached in " + breachedAt.getWorld().getName() 
                         + " by " + breachedBy + " at x: " + breachedAt.getBlockX() + " y: " + breachedAt.getBlockY() + " z: " + breachedAt.getBlockZ()
                         + "; Returning to x: " + returnTo.getBlockX() + " y: " + returnTo.getBlockY() + " z: " + returnTo.getBlockZ()
+                    , MessageLevel.FINE
             );
         }
         
         // Indicate to player that they have reached the border.
-        if (!this.message.equals("")) Main.messageManager.send(player, MessageLevel.SEVERE, this.message);
+        if (!this.message.equals("")) Main.messageManager.send(player, this.message, MessageLevel.SEVERE);
         
         // Send player back to inside the border.
         if (player.isInsideVehicle()) {

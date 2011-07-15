@@ -10,8 +10,6 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
     
     @Override
     public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event) {
-        if (!this.main.isEnabled()) return;
-        
         Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
         if (border == null || border.contains(event.getPlayer().getLocation().getBlockX(), event.getPlayer().getLocation().getBlockZ()))
             return;
@@ -27,8 +25,6 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
     @Override
     public void onPlayerMove(org.bukkit.event.player.PlayerMoveEvent event) {
         if (event.isCancelled()) return;
-        
-        if (!this.main.isEnabled()) return;
         
         Border border = this.main.getBorder(event.getPlayer().getWorld().getName());
         if (border == null || border.contains(event.getTo().getBlockX(), event.getTo().getBlockZ()))
