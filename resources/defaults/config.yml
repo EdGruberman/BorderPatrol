@@ -1,8 +1,12 @@
 ﻿message: 'You have reached the border.'
 borders:
     world:
-        distance: 1000
-        origin:
+        minX: -1000
+        maxX: 1000
+        minZ: -1000
+        maxZ: 1000
+        default:
             x: 0
-            y: 0
+            y: 64
             z: 0
+            

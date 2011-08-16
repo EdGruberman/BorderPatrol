@@ -1,83 +1,283 @@
 package edgruberman.bukkit.simpleborder;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
-public class Border {
+class Border {
     
+    /**
+     *  Materials safe for a player to occupy.
+     */
+    private static final Set<Material> SAFE_CONTAINERS = new HashSet<Material>(Arrays.asList(new Material[] {
+          Material.AIR
+        , Material.WATER
+        , Material.STATIONARY_WATER
+        , Material.SAPLING
+        , Material.YELLOW_FLOWER
+        , Material.RED_ROSE
+        , Material.BROWN_MUSHROOM
+        , Material.RED_MUSHROOM
+        , Material.TORCH
+        , Material.REDSTONE_WIRE
+        , Material.CROPS
+        , Material.SIGN_POST
+        , Material.WOODEN_DOOR
+        , Material.LADDER
+        , Material.RAILS
+        , Material.WALL_SIGN
+        , Material.LEVER
+        , Material.STONE_PLATE
+        , Material.IRON_DOOR_BLOCK
+        , Material.WOOD_PLATE
+        , Material.REDSTONE_TORCH_OFF
+        , Material.REDSTONE_TORCH_ON
+        , Material.STONE_BUTTON
+        , Material.SNOW
+        , Material.SUGAR_CANE_BLOCK
+        , Material.DIODE_BLOCK_OFF
+        , Material.DIODE_BLOCK_ON
+        , Material.POWERED_RAIL
+        , Material.DETECTOR_RAIL
+        , Material.LONG_GRASS
+        , Material.DEAD_BUSH
+    }));
+    
+    /**
+     * Materials safe for a player to stand on and safe for a player to occupy.
+     */
+    private static final Set<Material> SAFE_MATERIALS = new HashSet<Material>(Arrays.asList(new Material[] {
+          Material.WATER
+        , Material.STATIONARY_WATER
+        , Material.SNOW
+      }));
+
+    /**
+     * Materials unsafe for a player to stand on.
+     */
+    private static final Set<Material> UNSAFE_SUPPORTS = new HashSet<Material>(Arrays.asList(new Material[] {
+          Material.AIR
+        , Material.LAVA
+        , Material.STATIONARY_LAVA
+        , Material.CACTUS
+        , Material.FIRE
+      }));
+    
+    /**
+     * Default extra distance inside a border to use when finding a location inside a border.
+     */
+    private static final int DEFAULT_PADDING = 3;
+    
+    // Factory/Manager
+    static String message = "";
+    static Map<World, Border> defined = new HashMap<World, Border>();
+    
+    // Instance Configuration
     private World world;
-    private int originX;
-    private int originY;
-    private int originZ;
-    private int distance;
-    
     private int minX;
     private int maxX;
     private int minZ;
     private int maxZ;
+    private Block defaultSafe;
     
-    public Border(World world, int originX, int originY, int originZ, int distance) {
+    Border(final World world, final int minX, final int maxX, final int minZ, final int maxZ, final int safeX, final int safeY, final int safeZ) {
         this.world = world;
-        this.originX = originX;
-        this.originY = originY;
-        this.originZ = originZ;
-        this.distance = distance;
-
-        this.minX = originX - distance;
-        this.maxX = originX + distance;
-        this.minZ = originZ - distance;
-        this.maxZ = originZ + distance;
-    }
-    
-    public String getDescription() {
-        return "Border in \"" + this.world.getName() + "\""
-            + " is " + this.distance
-            + " from the origin of X=" + this.originX
-            + ",Y=" + this.originY
-            + ",Z=" + this.originZ;
-    }
-    
-    public Block getOrigin() {
-        return this.world.getBlockAt(this.originX, this.originY, this.originZ);
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minZ = minZ;
+        this.maxZ = maxZ;
+        
+        if (!this.isInside(safeX, safeZ))
+            new IllegalArgumentException("Default safe coordinates are not within border.");
+        
+        this.defaultSafe = this.world.getBlockAt(safeX, safeY, safeZ);
+        
+        Border.defined.put(this.world, this);
     }
     
     /**
-     * Determines if location is defined as being within the border or not.
+     * Generates text describing this border's configuration.
      * 
-     * @param X X Axis value to check if it is inside the border.
-     * @param Z Z Axis value to check if it is inside the border.
-     * @return true if Location is inside the border; Otherwise false.
+     * @return border configuration in human readable format
      */
-    public boolean contains(int X, int Z) {
-        return !(X < this.minX || X > this.maxX || Z < this.minZ || Z > this.maxZ);
+    String description() {
+        return "Border in [" + this.world.getName() + "]"
+            + " is x:{" + this.minX + " to " + this.maxX + "}"
+            + " and z:{" + this.minZ + " to " + this.maxZ + "}"
+            + " with the default safe block at " + this.defaultSafe.toString();
     }
     
     /**
-     * Returns the closest block to the provided target just inside the border that is safe for a player to occupy.
+     * Determines if location is found within or on the border.
      * 
-     * @param target Location to get as close as possible to but still within border.
-     * @return
-     */    
-    public Location getInside(Location target) {
-        Location inside = target.clone();
+     * @param l location to check
+     * @return true if location is inside border; otherwise false
+     */
+    boolean isInside(final Location l) {
+        return this.isInside(l.getBlockX(), l.getBlockZ());
+    }
+    
+    /**
+     * Determines if coordinates are found within or on the border.
+     * 
+     * @param x X axis value
+     * @param z Z axis value
+     * @return true if coordinates are inside border; otherwise false
+     */
+    boolean isInside(final int x, final int z) {
+        return !(x <= this.minX || x >= this.maxX || z <= this.minZ || z >= this.maxZ);
+    }
+    
+    /**
+     * Return player to inside border.
+     * 
+     * @param player player to return inside
+     * @param breached where player moved outside the border
+     * @return location player was returned to
+     */
+    Location returnInside(final Player player, final Location breached) {
+        Location inside = this.findSafe(breached);
         
-        if (inside.getX() <= this.minX)
-            inside.setX(this.minX + 3);
-        else if (inside.getX() >= this.maxX)
-            inside.setX(this.maxX - 3);
+        // Return player to the middle of the block and players in vehicles need to be shifted up.
+        inside.add(0.5, (player.isInsideVehicle() ? 1 : 0), 0.5);
         
-        if (inside.getZ() <= this.minZ)
-            inside.setZ(this.minZ + 3);
-        else if (inside.getZ() >= this.maxZ)
-            inside.setZ(this.maxZ - 3);
-
-        Block block = WorldUtility.getSafeY(inside.getBlock());
-        if (block == null) return null;
-
-        inside.setX(block.getX() + 0.5);
-        inside.setY(block.getY());
-        inside.setZ(block.getZ() + 0.5);
+        // Send player back to inside the border.
+        if (player.isInsideVehicle()) {
+            player.getVehicle().setVelocity(new Vector(0, 0, 0));
+            player.getVehicle().teleport(inside);
+        } else {
+            player.teleport(inside);
+        }
+        
         return inside;
+    }
+    
+    /**
+     * Returns the closest location to the target inside the border.
+     * 
+     * @param target location to try and get closest to
+     * @param padding margin from border
+     * @return new location inside border closest to target
+     */ 
+    Location findClosest(final Location target, final double padding) {
+        Location closest = target.clone();
+        
+        if (closest.getX() <= (this.minX + padding))
+            closest.setX(this.minX + padding);
+        else if (closest.getX() >= (this.maxX - padding))
+            closest.setX(this.maxX - padding);
+        
+        if (closest.getZ() <= (this.minZ + padding))
+            closest.setZ(this.minZ + padding);
+        else if (closest.getZ() >= (this.maxZ - padding))
+            closest.setZ(this.maxZ - padding);
+        
+        return closest;
+    }
+    
+    /**
+     * Attempts to find a player safe location inside the border closest to the
+     * given target. If a safe location can not be found, the default safe
+     * location for this border is used.
+     * 
+     * @param target location to try and find the closest safe location to
+     * @return safe location inside border closest to target
+     */
+    Location findSafe(final Location target) {
+        Location closest = this.findClosest(target, Border.DEFAULT_PADDING);
+        
+        Block safe = Border.findSafeY(closest.getBlock());
+        if (safe == null) safe = this.defaultSafe;
+        
+        closest.setX(safe.getX());
+        closest.setY(safe.getY());
+        closest.setZ(safe.getZ());
+        
+        return closest;
+    }
+    
+    /**
+     * Find the closest safe block for a player to occupy along the Y axis.
+     * 
+     * @param location Initial location to start searching up and down from.
+     * @return Location that is safe for a player to occupy.
+     */
+    private static Block findSafeY(final Block block) {
+        int bottom = 0, top = block.getWorld().getMaxHeight() - 1;
+        
+        Block below = block, above = block;
+        while ((below != null && below.getY() > bottom) || (above != null && above.getY() < top)) {
+            
+            if (below != null && isSafe(below)) return below;
+            
+            if (above != null && above != below && isSafe(above)) return above;
+            
+            // Get next block down to check, unless we've run out of blocks below already.
+            if (below != null) {
+                if (below.getY() > bottom)
+                    below = below.getRelative(BlockFace.DOWN);
+                else
+                    // No more blocks below.
+                    below = null;
+            }
+            
+            // Get next block above to check, unless we've run out of blocks above already.
+            if (above != null) {
+                if (above.getY() < top)
+                    above = above.getRelative(BlockFace.UP);
+                else
+                    // No more blocks above.
+                    above = null;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Check if the block itself and the block above it are safe containers while the block below it is also safe support.
+     * 
+     * @param block Block to check.
+     * @return True if block is a safe block to teleport player to; Otherwise false.
+     */
+    private static boolean isSafe(final Block block) {
+        return isSafeContainer(block.getRelative(BlockFace.UP))
+            && isSafeContainer(block)
+            && isSafeSupport(block.getRelative(BlockFace.DOWN))
+        ;
+    }
+    
+    /**
+     * Determines if a block is safe for a player to occupy.
+     * 
+     * @param block Block to check.
+     * @return True if block is safe for a player to occupy; Otherwise false.
+     */
+    private static boolean isSafeContainer(final Block block) {
+        return SAFE_CONTAINERS.contains(block.getType());
+    }
+
+    /**
+     * Block will support a player standing on it safely.
+     * 
+     * @param block Block to check.
+     * @return True if block is safe.
+     */
+    private static boolean isSafeSupport(final Block block) {
+        return (
+                !isSafeContainer(block)                     // Block is solid
+                || SAFE_MATERIALS.contains(block.getType()) //    or block is not solid but still safe to stand on.
+            ) && !UNSAFE_SUPPORTS.contains(block.getType()) // Block won't cause pain when standing on it.
+        ;
     }
 }
