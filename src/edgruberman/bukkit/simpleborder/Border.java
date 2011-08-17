@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -115,6 +116,22 @@ class Border {
             + " is x:{" + this.minX + " to " + this.maxX + "}"
             + " and z:{" + this.minZ + " to " + this.maxZ + "}"
             + " with the default safe block at " + this.defaultSafe.toString();
+    }
+    
+    /**
+     * Determines if chunk has any block that is found within or on the border.
+     * 
+     * @param c chunk to check
+     * @return true if chunk has a block inside border; otherwise false
+     */
+    boolean isInside(final Chunk c) {
+        // Check all four corners of chunk, ignoring depth.
+        if (this.isInside(c.getBlock(0, 0, 0).getLocation())) return true;
+        if (this.isInside(c.getBlock(15, 0, 0).getLocation())) return true;
+        if (this.isInside(c.getBlock(0, 0, 15).getLocation())) return true;
+        if (this.isInside(c.getBlock(15, 0, 15).getLocation())) return true;
+        
+        return false;
     }
     
     /**

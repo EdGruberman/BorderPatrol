@@ -1,10 +1,13 @@
 package edgruberman.bukkit.simpleborder;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.TravelAgent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
@@ -17,6 +20,7 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         PluginManager pm = plugin.getServer().getPluginManager();
         pm.registerEvent(Event.Type.PLAYER_JOIN, this, Event.Priority.Normal, plugin);
         pm.registerEvent(Event.Type.PLAYER_MOVE, this, Event.Priority.Normal, plugin);
+        pm.registerEvent(Event.Type.PLAYER_PORTAL, this, Event.Priority.Normal, plugin);
     }
     
     @Override
@@ -26,7 +30,6 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         if (border == null || border.isInside(event.getPlayer().getLocation())) return;
         
         PlayerListener.returnInside(event.getPlayer(), event.getPlayer().getLocation());
-        return;
     }
     
     @Override
@@ -39,7 +42,42 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         
         Location inside = PlayerListener.returnInside(event.getPlayer(), event.getTo());
         event.setTo(inside);
-        return;
+    }
+    
+    @Override
+    public void onPlayerPortal(final PlayerPortalEvent event) {
+        if (event.isCancelled()) return;
+        
+        // Ignore if no border defined for target world.
+        Border border = Border.defined.get(event.getTo().getWorld());
+        if (border == null) return;
+        
+        // Ensure destination chunks are loaded.
+        TravelAgent pta = event.getPortalTravelAgent();
+        Chunk maxC = event.getTo().clone().add(pta.getSearchRadius(), 0, pta.getSearchRadius()).getBlock().getChunk();
+        Chunk minC = event.getTo().clone().subtract(pta.getSearchRadius(), 0, pta.getSearchRadius()).getBlock().getChunk();
+        Chunk c;
+        for (int x = minC.getX(); x <= maxC.getX(); x++)
+            for (int z = minC.getZ(); z <= maxC.getZ(); z++) {
+                c = event.getTo().getWorld().getChunkAt(x, z);
+                if (!c.isLoaded() && border.isInside(c)) c.load();
+            }
+        
+        // Check for existing portal inside border.
+        Main.messageManager.log("trying to find portal at " + event.getTo());
+        Location destination = pta.findPortal(event.getTo());
+        Main.messageManager.log("portal found at " + destination);
+        
+        // If no existing portal or existing portal is not inside border, create new portal.
+        if (destination == null || !border.isInside(destination)) {
+            // Ensure target creation radius and portal size is fully contained in border.
+            destination = border.findClosest(event.getTo(), pta.getCreationRadius() + 4);
+            Main.messageManager.log("requsting portal creation at " + destination);
+            pta.createPortal(destination);
+        }
+        
+        event.useTravelAgent(false);
+        event.setTo(destination);
     }
     
     /**
@@ -51,7 +89,7 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
      */
     private static Location returnInside(final Player player, final Location breached) {
         // Notify player of breaching border.
-        if (Border.message.length() != 0) Main.messageManager.send(player, Border.message, MessageLevel.SEVERE);
+        if (Border.message.length() != 0) Main.messageManager.send(player, Border.message, MessageLevel.SEVERE, false);
         
         // Return player to inside border.
         Location inside = Border.defined.get(player.getWorld()).returnInside(player, breached);
