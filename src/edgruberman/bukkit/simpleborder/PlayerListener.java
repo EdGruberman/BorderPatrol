@@ -1,8 +1,7 @@
 package edgruberman.bukkit.simpleborder;
 
-import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.TravelAgent;
+import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -52,29 +51,37 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
         Border border = Border.defined.get(event.getTo().getWorld());
         if (border == null) return;
         
+        PortalBorderAgent pba = new PortalBorderAgent();
+        
+        Main.messageManager.log(event.getPlayer().getName() + " entered a portal at " + PlayerListener.describeLocation(event.getFrom()), MessageLevel.FINEST);
+        Location destination = event.getTo();
+        
         // Ensure destination chunks are loaded.
-        TravelAgent pta = event.getPortalTravelAgent();
-        Chunk maxC = event.getTo().clone().add(pta.getSearchRadius(), 0, pta.getSearchRadius()).getBlock().getChunk();
-        Chunk minC = event.getTo().clone().subtract(pta.getSearchRadius(), 0, pta.getSearchRadius()).getBlock().getChunk();
-        Chunk c;
-        for (int x = minC.getX(); x <= maxC.getX(); x++)
-            for (int z = minC.getZ(); z <= maxC.getZ(); z++) {
-                c = event.getTo().getWorld().getChunkAt(x, z);
-                if (!c.isLoaded() && border.isInside(c)) c.load();
-            }
+        border.loadChunks(destination, pba.getSearchRadius());
         
-        // Check for existing portal inside border.
-        Main.messageManager.log("trying to find portal at " + event.getTo());
-        Location destination = pta.findPortal(event.getTo());
-        Main.messageManager.log("portal found at " + destination);
+        // Search for existing portal within border.
+        Main.messageManager.log("Attempting to locate an existing portal for " + event.getPlayer().getName() + " near " + PlayerListener.describeLocation(event.getTo()), MessageLevel.FINEST);
+        destination = pba.findPortal(event.getTo());
+        Main.messageManager.log("Existing portal found for " + event.getPlayer().getName() + " at " + PlayerListener.describeLocation(destination), MessageLevel.FINEST);
         
-        // If no existing portal or existing portal is not inside border, create new portal.
-        if (destination == null || !border.isInside(destination)) {
-            // Ensure target creation radius and portal size is fully contained in border.
-            destination = border.findClosest(event.getTo(), pta.getCreationRadius() + 4);
-            Main.messageManager.log("requsting portal creation at " + destination);
-            pta.createPortal(destination);
+        // If no existing portal found, create new portal.
+        if (destination == null) {
+            destination = event.getTo();
+            
+            // Ensure destination chunks are loaded.
+            border.loadChunks(destination, pba.getCreationRadius());
+            
+            // Create portal within border.
+            Main.messageManager.log("Requesting portal creation for " + event.getPlayer().getName() + " at " + PlayerListener.describeLocation(destination), MessageLevel.FINEST);
+            pba.createPortal(destination);
+            
+            // Find the newly created portal.
+            destination = pba.findPortal(destination);
+            Main.messageManager.log("Identified newly created portal for " + event.getPlayer().getName() + " at " + PlayerListener.describeLocation(destination), MessageLevel.FINEST);
         }
+        
+        // Fallback to original location if no portal was able to be created, not sure how/why this would ever happen.
+        if (destination == null) destination = event.getTo();
         
         event.useTravelAgent(false);
         event.setTo(destination);
@@ -120,5 +127,37 @@ public class PlayerListener extends org.bukkit.event.player.PlayerListener {
             description += " riding a " + player.getVehicle().toString().substring("Craft".length());
     
         return description;
+    }
+    
+    /**
+     * Generate a human readable location reference that shows translated
+     * coordinates for portal calculations also.
+     * 
+     * @param l location to describe
+     * @return textual representation of location
+     */
+    private static String describeLocation(Location l) {
+        if (l == null) return null;
+        
+        boolean normal = l.getWorld().getEnvironment().equals(Environment.NORMAL);
+        double toNether = 1D / 8D;
+        double toOverworld = 8D;
+        double translation = ( normal ? toNether : toOverworld);
+        
+        return "[" + l.getWorld().getName() + "]"
+            + " x:" + l.getBlockX()
+            + " y:" + l.getBlockY()
+            + " z:" + l.getBlockZ()
+            + " | " + ( normal ? "Nether" : "Overworld") + " match is"
+            + " x:" + Math.round(l.getX() * translation)
+            + " y:" + l.getBlockY()
+            + " z:" + Math.round(l.getZ() * translation)
+            + " ( "
+            + l.getX() + "," + l.getY() + "," + l.getZ()
+            + " | "
+            + l.getX() * translation
+            + "," + l.getY()
+            + "," + l.getZ() * translation
+            + " )";
     }
 }

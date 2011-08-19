@@ -119,6 +119,45 @@ class Border {
     }
     
     /**
+     * Load chunks containing a cylindrical grouping of blocks, if any part of
+     * the chunk containing one of the blocks is within this border.
+     * 
+     * @param origin block to center cylinder around
+     * @param radius number of blocks from origin to ensure are loaded in both
+     *        x and z directions
+     */
+    void loadChunks(final Location origin, final int radius) {
+        Chunk maxC = origin.clone().add(radius, 0, radius).getBlock().getChunk();
+        Chunk minC = origin.clone().subtract(radius, 0, radius).getBlock().getChunk();
+        Chunk c;
+        for (int x = minC.getX(); x <= maxC.getX(); x++)
+            for (int z = minC.getZ(); z <= maxC.getZ(); z++) {
+                c = origin.getWorld().getChunkAt(x, z);
+                if (!c.isLoaded() && this.isInside(c)) c.load();
+            }
+    }
+    
+    /**
+     * Determine distance to closest border.
+     * 
+     * @param l location to determine distance to border from
+     * @return distance to closest border
+     */
+    double distanceFrom(final Location l) {
+        double distanceMinX = Math.abs(l.getX() - this.minX);
+        double distanceMaxX = Math.abs(l.getX() - this.maxX);
+        double distanceMinZ = Math.abs(l.getZ() - this.minZ);
+        double distanceMaxZ = Math.abs(l.getZ() - this.maxZ);
+        
+        double distance = distanceMinX;
+        if (distanceMaxX < distance) distance = distanceMaxX;
+        if (distanceMinZ < distance) distance = distanceMinZ;
+        if (distanceMaxZ < distance) distance = distanceMaxZ;
+        
+        return distance;
+    }
+    
+    /**
      * Determines if chunk has any block that is found within or on the border.
      * 
      * @param c chunk to check

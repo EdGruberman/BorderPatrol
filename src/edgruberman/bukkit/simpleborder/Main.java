@@ -20,10 +20,10 @@ public class Main extends JavaPlugin {
         Main.messageManager.log("Version " + this.getDescription().getVersion());
         
         Main.configurationFile = new ConfigurationFile(this);
+        Border.message = Main.configurationFile.getConfiguration().getString("message");
     }
 	
     public void onEnable() {
-        Border.message = Main.configurationFile.getConfiguration().getString("message");
         this.loadBorders();
         
         new PlayerListener(this);
