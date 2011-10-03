@@ -52,6 +52,11 @@ class Border {
         , Material.DETECTOR_RAIL
         , Material.LONG_GRASS
         , Material.DEAD_BUSH
+        , Material.WEB
+        , Material.TRAP_DOOR
+        , Material.PUMPKIN_STEM
+        , Material.MELON_STEM
+        , Material.VINE
     }));
     
     /**
@@ -135,26 +140,6 @@ class Border {
                 c = origin.getWorld().getChunkAt(x, z);
                 if (!c.isLoaded() && this.isInside(c)) c.load();
             }
-    }
-    
-    /**
-     * Determine distance to closest border.
-     * 
-     * @param l location to determine distance to border from
-     * @return distance to closest border
-     */
-    double distanceFrom(final Location l) {
-        double distanceMinX = Math.abs(l.getX() - this.minX);
-        double distanceMaxX = Math.abs(l.getX() - this.maxX);
-        double distanceMinZ = Math.abs(l.getZ() - this.minZ);
-        double distanceMaxZ = Math.abs(l.getZ() - this.maxZ);
-        
-        double distance = distanceMinX;
-        if (distanceMaxX < distance) distance = distanceMaxX;
-        if (distanceMinZ < distance) distance = distanceMinZ;
-        if (distanceMaxZ < distance) distance = distanceMaxZ;
-        
-        return distance;
     }
     
     /**
