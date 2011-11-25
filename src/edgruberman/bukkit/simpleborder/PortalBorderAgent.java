@@ -2,17 +2,20 @@ package edgruberman.bukkit.simpleborder;
 
 import java.util.Random;
 
+import net.minecraft.server.MathHelper;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.event.world.PortalCreateEvent;
 
 /**
  * Replacement for PortalTravelAgent that ensures portals are only found/created within borders.
  */
-class PortalBorderAgent {
+final class PortalBorderAgent {
     
     private Random random = new Random();
     
@@ -22,7 +25,32 @@ class PortalBorderAgent {
     Location findPortal(Location location) {
         World world = location.getWorld();
         Border border = Border.defined.get(world);
+        
+        if (world.getEnvironment() == Environment.THE_END) {
+            int i = MathHelper.floor(location.getBlockX());
+            int j = MathHelper.floor(location.getBlockY()) - 1;
+            int k = MathHelper.floor(location.getBlockZ());
+            byte b0 = 1;
+            byte b1 = 0;
+            
+            for (int l = -2; l <= 2; ++l) {
+                for (int i1 = -2; i1 <= 2; ++i1) {
+                    for (int j1 = -1; j1 < 3; ++j1) {
+                        int k1 = i + i1 * b0 + l * b1;
+                        int l1 = j + j1;
+                        int i2 = k + i1 * b1 - l * b0;
+                        boolean flag = j1 < 0;
 
+                        if (world.getBlockTypeIdAt(k1, l1, i2) != (flag ? Material.OBSIDIAN.getId() : 0)) {
+                            return null;
+                        }
+                    }
+                }
+            }
+            
+            return location;
+        }
+        
         double distanceSquaredClosest = -1.0D;
         int foundX = 0;
         int foundY = 0;
@@ -39,7 +67,7 @@ class PortalBorderAgent {
                 
                 double dZ = (double) z + 0.5D - location.getZ();
 
-                for (int y = 127; y >= 0; --y) {
+                for (int y = world.getMaxHeight() - 1; y >= 0; --y) {
                     // Using (world.getBlock(x, y, z).getType() == Material.PORTAL) leaked memory
                     if (world.getBlockTypeIdAt(x, y, z) != Material.PORTAL.getId()) continue;
                     
@@ -91,6 +119,29 @@ class PortalBorderAgent {
         Border border = Border.defined.get(world);
         net.minecraft.server.World nmsWorld = ((org.bukkit.craftbukkit.CraftWorld) world).getHandle();
         
+        if (location.getWorld().getEnvironment() == Environment.THE_END) {
+            int i = MathHelper.floor(location.getBlockX());
+            int j = MathHelper.floor(location.getBlockY()) - 1;
+            int k = MathHelper.floor(location.getBlockZ());
+            byte b0 = 1;
+            byte b1 = 0;
+            
+            for (int l = -2; l <= 2; ++l) {
+                for (int i1 = -2; i1 <= 2; ++i1) {
+                    for (int j1 = -1; j1 < 3; ++j1) {
+                        int k1 = i + i1 * b0 + l * b1;
+                        int l1 = j + j1;
+                        int i2 = k + i1 * b1 - l * b0;
+                        boolean flag = j1 < 0;
+                        
+                        world.getBlockAt(k1, l1, i2).setTypeId(flag ? Material.OBSIDIAN.getId() : 0);
+                    }
+                }
+            }
+
+            return true;
+        }
+        
         double d0 = -1.0D;
         int i = location.getBlockX();
         int j = location.getBlockY();
@@ -126,7 +177,7 @@ class PortalBorderAgent {
                 d2 = (double) j2 + 0.5D - location.getZ();
 
                 label271:
-                for (l2 = 127; l2 >= 0; --l2) {
+                for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {
                     if (!world.getBlockAt(i2, l2, j2).isEmpty()) continue;
                     
                     while (l2 > 0 && world.getBlockAt(i2, l2 - 1, j2).isEmpty()) {
@@ -179,7 +230,7 @@ class PortalBorderAgent {
                     d2 = (double) j2 + 0.5D - location.getZ();
 
                     label219:
-                    for (l2 = 127; l2 >= 0; --l2) {                        
+                    for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {                        
                         if (!world.getBlockAt(i2, l2, j2).isEmpty()) continue;
                         
                         while (l2 > 0 && world.getBlockAt(i2, l2 - 1, j2).isEmpty()) {
@@ -242,8 +293,8 @@ class PortalBorderAgent {
                 i1 = 70;
             }
 
-            if (i1 > 118) {
-                i1 = 118;
+            if (i1 > world.getMaxHeight() - 10) {
+                i1 = world.getMaxHeight() - 10;
             }
 
             j5 = i1;
@@ -290,8 +341,8 @@ class PortalBorderAgent {
                 i1 = 70;
             }
 
-            if (i1 > 118) {
-                i1 = 118;
+            if (i1 > world.getMaxHeight() - 10) {
+                i1 = world.getMaxHeight() - 10;
             }
 
             j5 = i1;

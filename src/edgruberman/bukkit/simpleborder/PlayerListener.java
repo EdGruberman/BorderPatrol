@@ -13,11 +13,11 @@ import org.bukkit.plugin.PluginManager;
 import edgruberman.bukkit.messagemanager.MessageLevel;
 import edgruberman.bukkit.messagemanager.channels.Channel;
 
-public class PlayerListener extends org.bukkit.event.player.PlayerListener {
+final class PlayerListener extends org.bukkit.event.player.PlayerListener {
     
     public PlayerListener(final Plugin plugin) {
         PluginManager pm = plugin.getServer().getPluginManager();
-        pm.registerEvent(Event.Type.PLAYER_JOIN, this, Event.Priority.Normal, plugin);
+        pm.registerEvent(Event.Type.PLAYER_JOIN, this, Event.Priority.Monitor, plugin);
         pm.registerEvent(Event.Type.PLAYER_MOVE, this, Event.Priority.Normal, plugin);
         pm.registerEvent(Event.Type.PLAYER_PORTAL, this, Event.Priority.Normal, plugin);
     }

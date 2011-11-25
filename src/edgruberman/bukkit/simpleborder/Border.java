@@ -15,7 +15,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-class Border {
+final class Border {
     
     /**
      *  Materials safe for a player to occupy.
@@ -57,6 +57,7 @@ class Border {
         , Material.PUMPKIN_STEM
         , Material.MELON_STEM
         , Material.VINE
+        , Material.NETHER_WARTS
     }));
     
     /**
