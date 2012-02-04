@@ -1,0 +1,45 @@
+safeContainers: # Materials safe for a player to occupy
+    - SNOW
+    - AIR
+    - SAPLING
+    - YELLOW_FLOWER
+    - RED_ROSE
+    - BROWN_MUSHROOM
+    - RED_MUSHROOM
+    - TORCH
+    - REDSTONE_WIRE
+    - CROPS
+    - SIGN_POST
+    - WOODEN_DOOR
+    - LADDER
+    - RAILS
+    - WALL_SIGN
+    - LEVER
+    - STONE_PLATE
+    - IRON_DOOR_BLOCK
+    - WOOD_PLATE
+    - REDSTONE_TORCH_OFF
+    - REDSTONE_TORCH_ON
+    - STONE_BUTTON
+    - SUGAR_CANE_BLOCK
+    - DIODE_BLOCK_OFF
+    - DIODE_BLOCK_ON
+    - POWERED_RAIL
+    - DETECTOR_RAIL
+    - LONG_GRASS
+    - DEAD_BUSH
+    - WEB
+    - TRAP_DOOR
+    - PUMPKIN_STEM
+    - MELON_STEM
+    - VINE
+    - NETHER_WARTS
+safeMaterials: # Materials safe for a player to occupy and be placed above
+    - WATER
+    - STATIONARY_WATER
+unsafeSupports: # Materials unsafe for a player to be placed above and not in safeContainers
+    - LAVA
+    - STATIONARY_LAVA
+    - CACTUS
+    - FIRE
+    - ENDER_PORTAL

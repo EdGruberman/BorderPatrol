@@ -1,38 +1,143 @@
-package edgruberman.bukkit.simpleborder;
+package edgruberman.bukkit.borderpatrol;
 
 import java.util.Random;
 
 import net.minecraft.server.MathHelper;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.plugin.Plugin;
+
+import edgruberman.bukkit.messagemanager.MessageLevel;
 
 /**
- * Replacement for PortalTravelAgent that ensures portals are only found/created within borders.
+ * Replacement for PortalTravelAgent that ensures portals are only
+ * found and created within borders.
  */
-final class PortalBorderAgent {
-    
-    private Random random = new Random();
-    
+final class ImmigrationInspector implements Listener {
+
     private int searchRadius = 128;
     private int creationRadius = 14; // 16 -> 14
-    
+
+    private Random random = new Random();
+
+    ImmigrationInspector(final Plugin plugin) {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    @EventHandler
+    public void onPlayerPortal(final PlayerPortalEvent event) {
+        if (event.isCancelled()) return;
+
+        // Ignore if no border defined for target world
+        Border border = BorderAgent.borders.get(event.getTo().getWorld());
+        if (border == null) return;
+
+        Main.messageManager.log(event.getPlayer().getName() + " entered a portal at " + ImmigrationInspector.describeLocation(event.getFrom()), MessageLevel.FINEST);
+        Location destination = event.getTo();
+
+        // Ensure destination chunks are loaded before searching
+        ImmigrationInspector.loadChunks(border, destination, this.getSearchRadius());
+
+        // Search for existing portal within border
+        Main.messageManager.log("Attempting to locate an existing portal for " + event.getPlayer().getName() + " near " + ImmigrationInspector.describeLocation(event.getTo()), MessageLevel.FINEST);
+        destination = this.findPortal(event.getTo());
+        Main.messageManager.log("Existing portal found for " + event.getPlayer().getName() + " at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+
+        // If no existing portal found, create new portal
+        if (destination == null) {
+            destination = event.getTo();
+
+            // Ensure destination chunks are loaded before searching (TODO investigate when chunks unload and if this is necessary)
+            ImmigrationInspector.loadChunks(border, destination, this.getSearchRadius());
+
+            // Create portal within border
+            Main.messageManager.log("Requesting portal creation for " + event.getPlayer().getName() + " at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+            this.createPortal(destination);
+
+            // Find the newly created portal
+            destination = this.findPortal(destination);
+            Main.messageManager.log("Identified newly created portal for " + event.getPlayer().getName() + " at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+        }
+
+        // Fallback to original location if no portal was able to be created, not sure how/why this would ever happen.
+        if (destination == null) destination = event.getTo();
+
+        event.useTravelAgent(false);
+        event.setTo(destination);
+    }
+
+    /**
+     * Load chunks containing blocks within a square region, if any part of
+     * the chunk containing one of the blocks is within this border. This
+     * avoids generating chunks outside the border.
+     *
+     * @param origin center of square region
+     * @param radius blocks past origin (exclusive) along both x and z
+     */
+    private static void loadChunks(final Border border, final Location origin, final int radius) {
+        Chunk maxC = origin.clone().add(radius, 0, radius).getBlock().getChunk();
+        Chunk minC = origin.clone().subtract(radius, 0, radius).getBlock().getChunk();
+        Chunk c;
+        for (int x = minC.getX(); x <= maxC.getX(); x++)
+            for (int z = minC.getZ(); z <= maxC.getZ(); z++) {
+                c = origin.getWorld().getChunkAt(x, z);
+                if (!c.isLoaded() && border.contains(c)) c.load();
+            }
+    }
+
+    /**
+     * Generate a human readable location reference that shows translated
+     * coordinates for portal calculations also.
+     *
+     * @param l location to describe
+     * @return textual representation of location
+     */
+    private static String describeLocation(Location l) {
+        if (l == null) return null;
+
+        boolean normal = l.getWorld().getEnvironment().equals(Environment.NORMAL);
+        double toNether = 1D / 8D;
+        double toOverworld = 8D;
+        double translation = ( normal ? toNether : toOverworld);
+
+        return "[" + l.getWorld().getName() + "]"
+            + " x:" + l.getBlockX()
+            + " y:" + l.getBlockY()
+            + " z:" + l.getBlockZ()
+            + " | " + ( normal ? "Nether" : "Overworld") + " match is"
+            + " x:" + Math.round(l.getX() * translation)
+            + " y:" + l.getBlockY()
+            + " z:" + Math.round(l.getZ() * translation)
+            + " ( "
+            + l.getX() + "," + l.getY() + "," + l.getZ()
+            + " | "
+            + l.getX() * translation
+            + "," + l.getY()
+            + "," + l.getZ() * translation
+            + " )";
+    }
+
     Location findPortal(Location location) {
         World world = location.getWorld();
-        Border border = Border.defined.get(world);
-        
+        Border border = BorderAgent.borders.get(world);
+
         if (world.getEnvironment() == Environment.THE_END) {
             int i = MathHelper.floor(location.getBlockX());
             int j = MathHelper.floor(location.getBlockY()) - 1;
             int k = MathHelper.floor(location.getBlockZ());
             byte b0 = 1;
             byte b1 = 0;
-            
+
             for (int l = -2; l <= 2; ++l) {
                 for (int i1 = -2; i1 <= 2; ++i1) {
                     for (int j1 = -1; j1 < 3; ++j1) {
@@ -47,10 +152,10 @@ final class PortalBorderAgent {
                     }
                 }
             }
-            
+
             return location;
         }
-        
+
         double distanceSquaredClosest = -1.0D;
         int foundX = 0;
         int foundY = 0;
@@ -62,22 +167,22 @@ final class PortalBorderAgent {
             double dX = (double) x + 0.5D - location.getX();
 
             for (int z = originalZ - this.searchRadius; z <= originalZ + this.searchRadius; ++z) {
-                
-                if (!border.isInside(x, z)) continue;
-                
+
+                if (!border.contains(x, z)) continue;
+
                 double dZ = (double) z + 0.5D - location.getZ();
 
                 for (int y = world.getMaxHeight() - 1; y >= 0; --y) {
                     // Using (world.getBlock(x, y, z).getType() == Material.PORTAL) leaked memory
                     if (world.getBlockTypeIdAt(x, y, z) != Material.PORTAL.getId()) continue;
-                    
+
                     while (world.getBlockTypeIdAt(x, y - 1, z) == Material.PORTAL.getId()) --y;
 
                     double dY = (double) y + 0.5D - location.getY();
                     double distanceSquared = dX * dX + dY * dY + dZ * dZ;
 
                     if (distanceSquaredClosest >= 0.0D && distanceSquared >= distanceSquaredClosest) continue;
-                    
+
                     distanceSquaredClosest = distanceSquared;
                     foundX = x;
                     foundY = y;
@@ -91,7 +196,7 @@ final class PortalBorderAgent {
             double portalX = (double) foundX + 0.5D;
             double portalY = (double) foundY + 0.5D;
             double portalZ = (double) foundZ + 0.5D;
-            
+
             if (world.getBlockAt(foundX - 1, foundY, foundZ).getType() == Material.PORTAL) {
                 portalX -= 0.5D;
             }
@@ -116,16 +221,16 @@ final class PortalBorderAgent {
 
     boolean createPortal(Location location) {
         World world = location.getWorld();
-        Border border = Border.defined.get(world);
+        Border border = BorderAgent.borders.get(world);
         net.minecraft.server.World nmsWorld = ((org.bukkit.craftbukkit.CraftWorld) world).getHandle();
-        
+
         if (location.getWorld().getEnvironment() == Environment.THE_END) {
             int i = MathHelper.floor(location.getBlockX());
             int j = MathHelper.floor(location.getBlockY()) - 1;
             int k = MathHelper.floor(location.getBlockZ());
             byte b0 = 1;
             byte b1 = 0;
-            
+
             for (int l = -2; l <= 2; ++l) {
                 for (int i1 = -2; i1 <= 2; ++i1) {
                     for (int j1 = -1; j1 < 3; ++j1) {
@@ -133,7 +238,7 @@ final class PortalBorderAgent {
                         int l1 = j + j1;
                         int i2 = k + i1 * b1 - l * b0;
                         boolean flag = j1 < 0;
-                        
+
                         world.getBlockAt(k1, l1, i2).setTypeId(flag ? Material.OBSIDIAN.getId() : 0);
                     }
                 }
@@ -141,7 +246,7 @@ final class PortalBorderAgent {
 
             return true;
         }
-        
+
         double d0 = -1.0D;
         int i = location.getBlockX();
         int j = location.getBlockY();
@@ -172,14 +277,14 @@ final class PortalBorderAgent {
             d1 = (double) i2 + 0.5D - location.getX();
 
             for (j2 = k - this.creationRadius; j2 <= k + this.creationRadius; ++j2) {
-                if (!border.isInside(i2, j2)) continue;
-                
+                if (!border.contains(i2, j2)) continue;
+
                 d2 = (double) j2 + 0.5D - location.getZ();
 
                 label271:
                 for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {
                     if (!world.getBlockAt(i2, l2, j2).isEmpty()) continue;
-                    
+
                     while (l2 > 0 && world.getBlockAt(i2, l2 - 1, j2).isEmpty()) {
                         --l2;
                     }
@@ -225,14 +330,14 @@ final class PortalBorderAgent {
                 d1 = (double) i2 + 0.5D - location.getX();
 
                 for (j2 = k - this.creationRadius; j2 <= k + this.creationRadius; ++j2) {
-                    if (!border.isInside(i2, j2)) continue;
-                    
+                    if (!border.contains(i2, j2)) continue;
+
                     d2 = (double) j2 + 0.5D - location.getZ();
 
                     label219:
-                    for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {                        
+                    for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {
                         if (!world.getBlockAt(i2, l2, j2).isEmpty()) continue;
-                        
+
                         while (l2 > 0 && world.getBlockAt(i2, l2 - 1, j2).isEmpty()) {
                             --l2;
                         }
@@ -266,9 +371,9 @@ final class PortalBorderAgent {
                 }
             }
         }
-        
+
         // Final check to ensure coordinates to be used are inside border.
-        if (!border.isInside(l, j1)) return false;
+        if (!border.contains(l, j1)) return false;
 
         int i5 = l;
         int j5 = i1;
@@ -386,8 +491,8 @@ final class PortalBorderAgent {
 
         return true;
     }
-    
-    public PortalBorderAgent setSearchRadius(int radius) {
+
+    public ImmigrationInspector setSearchRadius(int radius) {
         this.searchRadius = radius;
         return this;
     }
@@ -396,7 +501,7 @@ final class PortalBorderAgent {
         return this.searchRadius;
     }
 
-    public PortalBorderAgent setCreationRadius(int radius) {
+    public ImmigrationInspector setCreationRadius(int radius) {
         this.creationRadius = radius < 2 ? 0 : radius - 2;
         return this;
     }

@@ -1,6 +1,6 @@
-name: SimpleBorder
+name: BorderPatrol
 description: Limits player movement past a defined square border.
 version: %VERSION%
 depend: [MessageManager]
 author: EdGruberman (ed@rjump.com)
-main: edgruberman.bukkit.simpleborder.Main
+main: edgruberman.bukkit.borderpatrol.Main
