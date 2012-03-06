@@ -1,6 +1,6 @@
-name: BorderPatrol
-description: Limits player movement past a defined square border.
-version: %VERSION%
+name: @NAME@
+description: Limits player movement past a square boundary
 depend: [MessageManager]
-author: EdGruberman (ed@rjump.com)
+version: @VERSION@
+author: @AUTHOR@
 main: edgruberman.bukkit.borderpatrol.Main
