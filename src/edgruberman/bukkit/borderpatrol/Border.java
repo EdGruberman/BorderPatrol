@@ -9,12 +9,12 @@ import org.bukkit.World;
  */
 final class Border {
 
-    private World world;
-    private int minX;
-    private int maxX;
-    private int minZ;
-    private int maxZ;
-    private Location safe;
+    private final World world;
+    private final int minX;
+    private final int maxX;
+    private final int minZ;
+    private final int maxZ;
+    private final Location safe;
     int padding = 3;
     int search = 32; // Maximum distance to add to padding when searching for a safe location
 
@@ -88,7 +88,7 @@ final class Border {
      * @return new location inside border closest to target
      */
     Location findClosest(final Location target, final double padding) {
-        Location closest = target.clone();
+        final Location closest = target.clone();
 
         if (closest.getX() <= (this.minX + padding))
             closest.setX(this.minX + padding);
@@ -115,7 +115,7 @@ final class Border {
         int padding = this.padding;
         Location safe = null;
         while (safe == null && padding <= this.search) {
-            Location closest = this.findClosest(target, padding);
+            final Location closest = this.findClosest(target, padding);
             safe = SafetyOfficer.findSafeY(closest);
             padding++;
         }

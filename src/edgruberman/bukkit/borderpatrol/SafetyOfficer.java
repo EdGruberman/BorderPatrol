@@ -33,18 +33,18 @@ final class SafetyOfficer {
      * @return closest safe spot for a player to occupy
      */
     static Location findSafeY(final Location location) {
-        Location safe = location.clone();
-        World world = safe.getWorld();
-        int x = safe.getBlockX();
+        final Location safe = location.clone();
+        final World world = safe.getWorld();
+        final int x = safe.getBlockX();
         int y = safe.getBlockY();
-        int z = safe.getBlockZ();
+        final int z = safe.getBlockZ();
 
         // Chunk must be loaded in order to return proper type IDs
         if (!world.isChunkLoaded(x >> 4, z >> 4)) world.loadChunk(x >> 4, z >> 4);
 
         if (SafetyOfficer.isSafe(world, x, y ,z)) return safe;
 
-        int bottom = 0, top = world.getMaxHeight() - 1;
+        final int bottom = 0, top = world.getMaxHeight() - 1;
         int below = y, above = y++;
         while ((below > bottom) || (above < top)) {
 
@@ -79,7 +79,7 @@ final class SafetyOfficer {
      * @return true if coordinates are safe for a player to be moved to; false otherwise
      */
     private static boolean isSafe(final World world, final int x, final int y, final int z) {
-        int below = world.getBlockTypeIdAt(x, y - 1, z);
+        final int below = world.getBlockTypeIdAt(x, y - 1, z);
         return (SafetyOfficer.safeMaterials.contains(below)                                    //     Below is safe to be placed above
                 || (!SafetyOfficer.safeContainers.contains(below)                              //  or Below is solid ...
                         && !SafetyOfficer.unsafeSupports.contains(below)))                     //                ... and not unsafe to be placed above

@@ -32,7 +32,7 @@ final class BorderAgent implements Listener {
     @EventHandler
     void onPlayerJoin(final PlayerJoinEvent event) {
         // Ignore if no border defined for this world or player is still inside border
-        Border border = BorderAgent.borders.get(event.getPlayer().getWorld());
+        final Border border = BorderAgent.borders.get(event.getPlayer().getWorld());
         if (border == null || border.contains(event.getPlayer().getLocation())) return;
 
         BorderAgent.enforce(event.getPlayer(), event.getPlayer().getLocation());
@@ -43,10 +43,10 @@ final class BorderAgent implements Listener {
         if (event.isCancelled()) return;
 
         // Ignore if no border defined for destination world or player will still be inside border
-        Border border = BorderAgent.borders.get(event.getTo().getWorld());
+        final Border border = BorderAgent.borders.get(event.getTo().getWorld());
         if (border == null || border.contains(event.getTo())) return;
 
-        Location inside = BorderAgent.enforce(event.getPlayer(), event.getTo());
+        final Location inside = BorderAgent.enforce(event.getPlayer(), event.getTo());
         event.setTo(inside);
     }
 
@@ -55,10 +55,10 @@ final class BorderAgent implements Listener {
         if (event.isCancelled()) return;
 
         // Ignore if no border defined for destination world or player will still be inside border
-        Border border = BorderAgent.borders.get(event.getTo().getWorld());
+        final Border border = BorderAgent.borders.get(event.getTo().getWorld());
         if (border == null || border.contains(event.getTo())) return;
 
-        Location inside = BorderAgent.enforce(event.getPlayer(), event.getTo());
+        final Location inside = BorderAgent.enforce(event.getPlayer(), event.getTo());
         event.setTo(inside);
     }
 
@@ -74,8 +74,8 @@ final class BorderAgent implements Listener {
         if (BorderAgent.message != null) Main.messageManager.send(suspect, BorderAgent.message, MessageLevel.SEVERE, false);
 
         // Find a safe location to return player to
-        Border border = BorderAgent.borders.get(suspect.getWorld());
-        Location returned = border.findSafe(breached);
+        final Border border = BorderAgent.borders.get(suspect.getWorld());
+        final Location returned = border.findSafe(breached);
 
         // Return player to the middle of the block and players in vehicles need to be shifted up
         returned.setX(Math.floor(returned.getX()) + 0.5);
