@@ -75,6 +75,12 @@ final class ImmigrationInspector implements TravelAgent, Listener {
             + " )";
     }
 
+    private int getWorldHeight(final World world) {
+        if (world.getEnvironment() == Environment.NETHER) return 128;
+
+        return 256;
+    }
+
     private int searchRadius = 128;
     private int creationRadius = 14; // 16 -> 14
     private boolean canCreatePortal = true;
@@ -161,7 +167,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
 
                 final double dZ = z + 0.5D - location.getZ();
 
-                for (int y = world.getMaxHeight() - 1; y >= 0; --y) {
+                for (int y = this.getWorldHeight(world) - 1; y >= 0; --y) {
                     // Using (world.getBlock(x, y, z).getType() == Material.PORTAL) leaked memory
                     if (world.getBlockTypeIdAt(x, y, z) != Material.PORTAL.getId()) continue;
 
@@ -272,7 +278,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                 d2 = j2 + 0.5D - location.getZ();
 
                 label271:
-                for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {
+                for (l2 = this.getWorldHeight(world) - 1; l2 >= 0; --l2) {
                     if (!world.getBlockAt(i2, l2, j2).isEmpty()) continue;
 
                     while (l2 > 0 && world.getBlockAt(i2, l2 - 1, j2).isEmpty()) {
@@ -325,7 +331,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                     d2 = j2 + 0.5D - location.getZ();
 
                     label219:
-                    for (l2 = world.getMaxHeight() - 1; l2 >= 0; --l2) {
+                    for (l2 = this.getWorldHeight(world) - 1; l2 >= 0; --l2) {
                         if (!world.getBlockAt(i2, l2, j2).isEmpty()) continue;
 
                         while (l2 > 0 && world.getBlockAt(i2, l2 - 1, j2).isEmpty()) {
@@ -388,8 +394,8 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                 i1 = 70;
             }
 
-            if (i1 > world.getMaxHeight() - 10) {
-                i1 = world.getMaxHeight() - 10;
+            if (i1 > this.getWorldHeight(world) - 10) {
+                i1 = this.getWorldHeight(world) - 10;
             }
 
             j5 = i1;
@@ -436,8 +442,8 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                 i1 = 70;
             }
 
-            if (i1 > world.getMaxHeight() - 10) {
-                i1 = world.getMaxHeight() - 10;
+            if (i1 > this.getWorldHeight(world) - 10) {
+                i1 = this.getWorldHeight(world) - 10;
             }
 
             j5 = i1;
