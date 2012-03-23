@@ -1,6 +1,7 @@
 package edgruberman.bukkit.borderpatrol;
 
 import java.util.Random;
+import java.util.logging.Level;
 
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.WorldServer;
@@ -18,8 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.plugin.Plugin;
-
-import edgruberman.bukkit.messagemanager.MessageLevel;
 
 /**
  * Replacement for PortalTravelAgent that ensures portals are only
@@ -39,7 +38,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         final Border border = BorderAgent.borders.get(event.getTo().getWorld());
         if (border == null) return;
 
-        Main.messageManager.log(event.getPlayer().getName() + " entered a portal at " + ImmigrationInspector.describeLocation(event.getFrom()), MessageLevel.FINEST);
+        Main.messageManager.owner.getLogger().log(Level.FINEST, event.getPlayer().getName() + " entered a portal at " + ImmigrationInspector.describeLocation(event.getFrom()));
         event.setPortalTravelAgent(this);
     }
 
@@ -94,24 +93,24 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         worldServer.chunkProviderServer.forceChunkLoad = true;
 
         // Search for existing portal within border
-        Main.messageManager.log("Attempting to locate an existing portal near " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+        Main.messageManager.owner.getLogger().log(Level.FINEST, "Attempting to locate an existing portal near " + ImmigrationInspector.describeLocation(destination));
         Location result = this.findPortal(destination);
-        Main.messageManager.log("Existing portal found at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+        Main.messageManager.owner.getLogger().log(Level.FINEST, "Existing portal found at " + ImmigrationInspector.describeLocation(destination));
 
         // If no existing portal found, create new portal
         if (result == null && this.canCreatePortal) {
             // Attempt to create portal within border
-            Main.messageManager.log("Requesting portal creation at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+            Main.messageManager.owner.getLogger().log(Level.FINEST, "Requesting portal creation at " + ImmigrationInspector.describeLocation(destination));
             if (this.createPortal(destination)) {
                 // Find the newly created portal
                 result = this.findPortal(destination);
-                Main.messageManager.log("Identified newly created portal at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+                Main.messageManager.owner.getLogger().log(Level.FINEST, "Identified newly created portal at " + ImmigrationInspector.describeLocation(destination));
             }
         }
 
         // Fallback to original location
         if (result == null) {
-            Main.messageManager.log("Unable to find or create portal; Falling back to original destination at " + ImmigrationInspector.describeLocation(destination), MessageLevel.FINEST);
+            Main.messageManager.owner.getLogger().log(Level.FINEST, "Unable to find or create portal; Falling back to original destination at " + ImmigrationInspector.describeLocation(destination));
             result = destination;
         }
 

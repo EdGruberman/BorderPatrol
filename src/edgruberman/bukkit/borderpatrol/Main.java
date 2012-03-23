@@ -1,6 +1,8 @@
 package edgruberman.bukkit.borderpatrol;
 
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -13,29 +15,52 @@ import edgruberman.bukkit.messagemanager.MessageManager;
 
 public final class Main extends JavaPlugin {
 
+    private static final String MINIMUM_VERSION_CONFIG = "2.0.0a0";
+    private static final String MINIMUM_VERSION_SAFETY = "2.0.0a0";
+
     static MessageManager messageManager;
 
-    @Override
-    public void onLoad() {
-        Main.messageManager = new MessageManager(this);
-    }
+    private ConfigurationFile configurationFile;
 
     @Override
     public void onEnable() {
-        this.loadConfiguration();
+        this.configurationFile = new ConfigurationFile(this);
+        this.configurationFile.setMinVersion(Main.MINIMUM_VERSION_CONFIG);
+        this.configurationFile.load();
+        this.setLoggingLevel();
+
+        Main.messageManager = new MessageManager(this);
+
+        this.configure();
 
         new ImmigrationInspector(this);
         new BorderAgent(this);
     }
 
-    private void loadConfiguration() {
-        final FileConfiguration safety = (new ConfigurationFile(this, "safety.yml")).load();
-        Main.loadMaterials(safety, "safeContainers", SafetyOfficer.safeContainers);
-        Main.loadMaterials(safety, "safeMaterials", SafetyOfficer.safeMaterials);
-        SafetyOfficer.safeContainers.addAll(SafetyOfficer.safeMaterials);
-        Main.loadMaterials(safety, "unsafeSupports", SafetyOfficer.unsafeSupports);
+    private void setLoggingLevel() {
+        final String name = this.configurationFile.getConfig().getString("logLevel", "INFO");
+        Level level = MessageLevel.parse(name);
+        if (level == null) level = Level.INFO;
 
-        final FileConfiguration config = (new ConfigurationFile(this)).load();
+        // Only set the parent handler lower if necessary, otherwise leave it alone for other configurations that have set it.
+        for (final Handler h : this.getLogger().getParent().getHandlers())
+            if (h.getLevel().intValue() > level.intValue()) h.setLevel(level);
+
+        this.getLogger().setLevel(level);
+        this.getLogger().log(Level.CONFIG, "Logging level set to: " + this.getLogger().getLevel());
+    }
+
+    private void configure() {
+        final ConfigurationFile safetyYml = new ConfigurationFile(this, "safety.yml");
+        safetyYml.setMinVersion(Main.MINIMUM_VERSION_SAFETY);
+        final FileConfiguration safety = safetyYml.load();
+
+        this.loadMaterials(safety, "safeContainers", SafetyOfficer.safeContainers);
+        this.loadMaterials(safety, "safeMaterials", SafetyOfficer.safeMaterials);
+        SafetyOfficer.safeContainers.addAll(SafetyOfficer.safeMaterials);
+        this.loadMaterials(safety, "unsafeSupports", SafetyOfficer.unsafeSupports);
+
+        final FileConfiguration config = this.configurationFile.getConfig();
         BorderAgent.message = config.getString("message");
         BorderAgent.borders.clear();
 
@@ -43,7 +68,7 @@ public final class Main extends JavaPlugin {
         for (final String worldName : config.getConfigurationSection("borders").getKeys(false)) {
             world = this.getServer().getWorld(worldName);
             if (world == null) {
-                Main.messageManager.log("Unable to define border for [" + worldName + "]; World not found.", MessageLevel.WARNING);
+                this.getLogger().log(Level.WARNING, "Unable to define border for [" + worldName + "]; World not found.");
                 continue;
             }
 
@@ -59,15 +84,15 @@ public final class Main extends JavaPlugin {
                     , worldBorder.getInt("safe.z", 0)
             );
             BorderAgent.borders.put(world, border);
-            Main.messageManager.log(border.description(), MessageLevel.CONFIG);
+            this.getLogger().log(Level.CONFIG, border.description());
         }
     }
 
-    private static void loadMaterials(final FileConfiguration source, final String entry, final Set<Integer> materials) {
+    private void loadMaterials(final FileConfiguration source, final String entry, final Set<Integer> materials) {
         for (final String name : source.getStringList(entry)) {
             final Material material = Material.valueOf(name);
             if (material == null) {
-                Main.messageManager.log("Unable to determine " + entry + " material: " + name, MessageLevel.WARNING);
+                this.getLogger().log(Level.WARNING, "Unable to determine " + entry + " material: " + name);
                 continue;
             }
 

@@ -2,6 +2,7 @@ package edgruberman.bukkit.borderpatrol;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -15,7 +16,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import edgruberman.bukkit.messagemanager.MessageLevel;
-import edgruberman.bukkit.messagemanager.channels.Channel;
 
 /**
  * Ensures players stay within the defined borders.
@@ -91,8 +91,8 @@ final class BorderAgent implements Listener {
         }
 
         // Log details for debug if configured
-        if (Main.messageManager.isLevel(Channel.Type.LOG, MessageLevel.FINE))
-            Main.messageManager.log(BorderAgent.report(suspect, breached, returned), MessageLevel.FINE);
+        if (Main.messageManager.owner.getLogger().isLoggable(MessageLevel.FINE))
+            Main.messageManager.owner.getLogger().log(Level.FINE, BorderAgent.report(suspect, breached, returned));
 
         return returned;
     }

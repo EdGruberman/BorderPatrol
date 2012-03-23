@@ -43,3 +43,4 @@ unsafeSupports: # Materials unsafe for a player to be placed above and not in sa
     - CACTUS
     - FIRE
     - ENDER_PORTAL
+version: @VERSION@
