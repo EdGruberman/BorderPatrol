@@ -8,6 +8,7 @@ import org.bukkit.World;
 
 /**
  * Utility class for finding safe locations for players.
+ * TODO move safety related methods from Border into here and remove static nature
  */
 final class SafetyOfficer {
 

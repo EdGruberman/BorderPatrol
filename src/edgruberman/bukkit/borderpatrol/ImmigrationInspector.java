@@ -26,7 +26,12 @@ import org.bukkit.plugin.Plugin;
  */
 final class ImmigrationInspector implements TravelAgent, Listener {
 
-    ImmigrationInspector(final Plugin plugin) {
+    private final Plugin plugin;
+    private final CivilEngineer engineer;
+
+    ImmigrationInspector(final Plugin plugin, final CivilEngineer engineer) {
+        this.plugin = plugin;
+        this.engineer = engineer;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -35,10 +40,10 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         if (event.isCancelled()) return;
 
         // Let normality happen if no border defined for target world
-        final Border border = BorderAgent.borders.get(event.getTo().getWorld());
+        final Border border = this.engineer.getBorder(event.getTo().getWorld());
         if (border == null) return;
 
-        Main.messageManager.owner.getLogger().log(Level.FINEST, event.getPlayer().getName() + " entered a portal at " + ImmigrationInspector.describeLocation(event.getFrom()));
+        this.plugin.getLogger().log(Level.FINEST, event.getPlayer().getName() + " entered a portal at " + ImmigrationInspector.describeLocation(event.getFrom()));
         event.setPortalTravelAgent(this);
     }
 
@@ -93,24 +98,24 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         worldServer.chunkProviderServer.forceChunkLoad = true;
 
         // Search for existing portal within border
-        Main.messageManager.owner.getLogger().log(Level.FINEST, "Attempting to locate an existing portal near " + ImmigrationInspector.describeLocation(destination));
+        this.plugin.getLogger().log(Level.FINEST, "Attempting to locate an existing portal near " + ImmigrationInspector.describeLocation(destination));
         Location result = this.findPortal(destination);
-        Main.messageManager.owner.getLogger().log(Level.FINEST, "Existing portal found at " + ImmigrationInspector.describeLocation(destination));
+        this.plugin.getLogger().log(Level.FINEST, "Existing portal found at " + ImmigrationInspector.describeLocation(destination));
 
         // If no existing portal found, create new portal
         if (result == null && this.canCreatePortal) {
             // Attempt to create portal within border
-            Main.messageManager.owner.getLogger().log(Level.FINEST, "Requesting portal creation at " + ImmigrationInspector.describeLocation(destination));
+            this.plugin.getLogger().log(Level.FINEST, "Requesting portal creation at " + ImmigrationInspector.describeLocation(destination));
             if (this.createPortal(destination)) {
                 // Find the newly created portal
                 result = this.findPortal(destination);
-                Main.messageManager.owner.getLogger().log(Level.FINEST, "Identified newly created portal at " + ImmigrationInspector.describeLocation(destination));
+                this.plugin.getLogger().log(Level.FINEST, "Identified newly created portal at " + ImmigrationInspector.describeLocation(destination));
             }
         }
 
         // Fallback to original location
         if (result == null) {
-            Main.messageManager.owner.getLogger().log(Level.FINEST, "Unable to find or create portal; Falling back to original destination at " + ImmigrationInspector.describeLocation(destination));
+            this.plugin.getLogger().log(Level.FINEST, "Unable to find or create portal; Falling back to original destination at " + ImmigrationInspector.describeLocation(destination));
             result = destination;
         }
 
@@ -123,7 +128,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
     @Override
     public Location findPortal(final Location location) {
         final World world = location.getWorld();
-        final Border border = BorderAgent.borders.get(world);
+        final Border border = this.engineer.getBorder(world);
 
         if (world.getEnvironment() == Environment.THE_END) {
             final int i = MathHelper.floor(location.getBlockX());
@@ -216,7 +221,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
     @Override
     public boolean createPortal(final Location location) {
         final World world = location.getWorld();
-        final Border border = BorderAgent.borders.get(world);
+        final Border border = this.engineer.getBorder(world);
         final net.minecraft.server.World nmsWorld = ((org.bukkit.craftbukkit.CraftWorld) world).getHandle();
 
         if (location.getWorld().getEnvironment() == Environment.THE_END) {

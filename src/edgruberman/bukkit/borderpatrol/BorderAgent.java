@@ -1,11 +1,8 @@
 package edgruberman.bukkit.borderpatrol;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,26 +13,31 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import edgruberman.bukkit.messagemanager.MessageLevel;
+import edgruberman.bukkit.messagemanager.MessageManager;
 
 /**
  * Ensures players stay within the defined borders.
  */
 final class BorderAgent implements Listener {
 
-    static Map<World, Border> borders = new HashMap<World, Border>();
-    static String message = null;
+    private final Plugin plugin;
+    private final CivilEngineer engineer;
+    private final String message;
 
-    BorderAgent(final Plugin plugin) {
+    BorderAgent(final Plugin plugin, final CivilEngineer engineer, final String message) {
+        this.plugin = plugin;
+        this.engineer = engineer;
+        this.message = message;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     void onPlayerJoin(final PlayerJoinEvent event) {
         // Ignore if no border defined for this world or player is still inside border
-        final Border border = BorderAgent.borders.get(event.getPlayer().getWorld());
+        final Border border = this.engineer.getBorder(event.getPlayer().getWorld());
         if (border == null || border.contains(event.getPlayer().getLocation())) return;
 
-        BorderAgent.enforce(event.getPlayer(), event.getPlayer().getLocation());
+        this.enforce(event.getPlayer(), event.getPlayer().getLocation());
     }
 
     @EventHandler
@@ -43,10 +45,10 @@ final class BorderAgent implements Listener {
         if (event.isCancelled()) return;
 
         // Ignore if no border defined for destination world or player will still be inside border
-        final Border border = BorderAgent.borders.get(event.getTo().getWorld());
+        final Border border = this.engineer.getBorder(event.getTo().getWorld());
         if (border == null || border.contains(event.getTo())) return;
 
-        final Location inside = BorderAgent.enforce(event.getPlayer(), event.getTo());
+        final Location inside = this.enforce(event.getPlayer(), event.getTo());
         event.setTo(inside);
     }
 
@@ -55,10 +57,10 @@ final class BorderAgent implements Listener {
         if (event.isCancelled()) return;
 
         // Ignore if no border defined for destination world or player will still be inside border
-        final Border border = BorderAgent.borders.get(event.getTo().getWorld());
+        final Border border = this.engineer.getBorder(event.getTo().getWorld());
         if (border == null || border.contains(event.getTo())) return;
 
-        final Location inside = BorderAgent.enforce(event.getPlayer(), event.getTo());
+        final Location inside = this.enforce(event.getPlayer(), event.getTo());
         event.setTo(inside);
     }
 
@@ -69,12 +71,12 @@ final class BorderAgent implements Listener {
      * @param breached where border was crossed
      * @return where suspect was sent
      */
-    private static Location enforce(final Player suspect, final Location breached) {
+    private Location enforce(final Player suspect, final Location breached) {
         // Notify player of breaching border
-        if (BorderAgent.message != null) Main.messageManager.send(suspect, BorderAgent.message, MessageLevel.SEVERE, false);
+        if (this.message != null) MessageManager.of(this.plugin).tell(suspect, this.message, MessageLevel.SEVERE, false);
 
         // Find a safe location to return player to
-        final Border border = BorderAgent.borders.get(suspect.getWorld());
+        final Border border = this.engineer.getBorder(suspect.getWorld());
         final Location returned = border.findSafe(breached);
 
         // Return player to the middle of the block and players in vehicles need to be shifted up
@@ -91,8 +93,8 @@ final class BorderAgent implements Listener {
         }
 
         // Log details for debug if configured
-        if (Main.messageManager.owner.getLogger().isLoggable(MessageLevel.FINE))
-            Main.messageManager.owner.getLogger().log(Level.FINE, BorderAgent.report(suspect, breached, returned));
+        if (this.plugin.getLogger().isLoggable(MessageLevel.FINE))
+            this.plugin.getLogger().log(Level.FINE, BorderAgent.report(suspect, breached, returned));
 
         return returned;
     }

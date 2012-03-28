@@ -1,78 +1,73 @@
 package edgruberman.bukkit.borderpatrol;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import edgruberman.bukkit.messagemanager.MessageLevel;
-import edgruberman.bukkit.messagemanager.MessageManager;
 
 public final class Main extends JavaPlugin {
 
     private static final String MINIMUM_VERSION_CONFIG = "2.0.0a0";
     private static final String MINIMUM_VERSION_SAFETY = "2.0.0a0";
 
-    static MessageManager messageManager;
-
-    private ConfigurationFile configurationFile;
-
     @Override
     public void onEnable() {
-        this.configurationFile = new ConfigurationFile(this);
-        this.configurationFile.setMinVersion(Main.MINIMUM_VERSION_CONFIG);
-        this.configurationFile.load();
-        this.setLoggingLevel();
+        final ConfigurationFile configurationFile = new ConfigurationFile(this);
+        configurationFile.setMinVersion(Main.MINIMUM_VERSION_CONFIG);
+        configurationFile.load();
+        configurationFile.setLoggingLevel();
 
-        Main.messageManager = new MessageManager(this);
-
-        this.configure();
-
-        new ImmigrationInspector(this);
-        new BorderAgent(this);
-    }
-
-    private void setLoggingLevel() {
-        final String name = this.configurationFile.getConfig().getString("logLevel", "INFO");
-        Level level = MessageLevel.parse(name);
-        if (level == null) level = Level.INFO;
-
-        // Only set the parent handler lower if necessary, otherwise leave it alone for other configurations that have set it.
-        for (final Handler h : this.getLogger().getParent().getHandlers())
-            if (h.getLevel().intValue() > level.intValue()) h.setLevel(level);
-
-        this.getLogger().setLevel(level);
-        this.getLogger().log(Level.CONFIG, "Logging level set to: " + this.getLogger().getLevel());
-    }
-
-    private void configure() {
         final ConfigurationFile safetyYml = new ConfigurationFile(this, "safety.yml");
         safetyYml.setMinVersion(Main.MINIMUM_VERSION_SAFETY);
-        final FileConfiguration safety = safetyYml.load();
+        safetyYml.load();
+        this.loadSafety(safetyYml.getConfig());
 
+        final List<Border> borders = this.loadBorders(configurationFile.getConfig().getConfigurationSection("borders"));
+        final CivilEngineer engineer = new CivilEngineer(borders);
+        new BorderAgent(this, engineer, configurationFile.getConfig().getString("message"));
+        new ImmigrationInspector(this, engineer);
+    }
+
+    private void loadSafety(final ConfigurationSection safety) {
         this.loadMaterials(safety, "safeContainers", SafetyOfficer.safeContainers);
         this.loadMaterials(safety, "safeMaterials", SafetyOfficer.safeMaterials);
         SafetyOfficer.safeContainers.addAll(SafetyOfficer.safeMaterials);
         this.loadMaterials(safety, "unsafeSupports", SafetyOfficer.unsafeSupports);
+    }
 
-        final FileConfiguration config = this.configurationFile.getConfig();
-        BorderAgent.message = config.getString("message");
-        BorderAgent.borders.clear();
+    private void loadMaterials(final ConfigurationSection type, final String entry, final Set<Integer> materials) {
+        if (!type.isSet(entry)) return;
 
-        World world;
-        for (final String worldName : config.getConfigurationSection("borders").getKeys(false)) {
-            world = this.getServer().getWorld(worldName);
-            if (world == null) {
-                this.getLogger().log(Level.WARNING, "Unable to define border for [" + worldName + "]; World not found.");
+        for (final String name : type.getStringList(entry)) {
+            final Material material = Material.valueOf(name);
+            if (material == null) {
+                this.getLogger().log(Level.WARNING, "Unable to determine material: " + name);
                 continue;
             }
 
-            final ConfigurationSection worldBorder = config.getConfigurationSection("borders").getConfigurationSection(worldName);
+            materials.add(material.getId());
+        }
+    }
+
+    private List<Border> loadBorders(final ConfigurationSection sectionBorders) {
+        if (sectionBorders == null) return Collections.emptyList();
+
+        final List<Border> borders = new ArrayList<Border>();
+
+        for (final String worldName : sectionBorders.getKeys(false)) {
+            final World world = this.getServer().getWorld(worldName);
+            if (world == null) {
+                this.getLogger().log(Level.WARNING, "Unable to define border; World not found: " +  worldName);
+                continue;
+            }
+
+            final ConfigurationSection worldBorder = sectionBorders.getConfigurationSection(worldName);
             final Border border = new Border(
                       world
                     , worldBorder.getInt("minX", 0)
@@ -83,21 +78,10 @@ public final class Main extends JavaPlugin {
                     , worldBorder.getInt("safe.y", 0)
                     , worldBorder.getInt("safe.z", 0)
             );
-            BorderAgent.borders.put(world, border);
+            borders.add(border);
             this.getLogger().log(Level.CONFIG, border.description());
         }
-    }
-
-    private void loadMaterials(final FileConfiguration source, final String entry, final Set<Integer> materials) {
-        for (final String name : source.getStringList(entry)) {
-            final Material material = Material.valueOf(name);
-            if (material == null) {
-                this.getLogger().log(Level.WARNING, "Unable to determine " + entry + " material: " + name);
-                continue;
-            }
-
-            materials.add(material.getId());
-        }
+        return borders;
     }
 
 }

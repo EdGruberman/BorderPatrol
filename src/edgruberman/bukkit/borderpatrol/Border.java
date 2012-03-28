@@ -31,6 +31,10 @@ final class Border {
         this.safe = new Location(this.world, safeX, safeY, safeZ);
     }
 
+    World getWorld() {
+        return this.world;
+    }
+
     /**
      * Generates text describing this border's configuration.
      *
@@ -40,7 +44,7 @@ final class Border {
         return "Border in [" + this.world.getName() + "]"
             + " is x:{" + this.minX + " to " + this.maxX + "}"
             + " and z:{" + this.minZ + " to " + this.maxZ + "}"
-            + " with the default safe block at " + this.safe.toString();
+            + " with the default safe block at x:" + this.safe.getBlockX() + " y:" + this.safe.getBlockY() + " z:" + this.safe.getBlockZ();
     }
 
     /**
@@ -119,6 +123,7 @@ final class Border {
             safe = SafetyOfficer.findSafeY(closest);
             padding++;
         }
+        // TODO log a warning when safe is used
         if (safe == null) safe = this.safe;
         return safe;
     }

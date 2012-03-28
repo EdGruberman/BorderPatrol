@@ -1,10 +1,10 @@
 ﻿message: 'You have been returned inside the border'
 borders:
     worldName:
-        minX: -1000
-        maxX: 1000
-        minZ: -1000
-        maxZ: 1000
+        minX: -500
+        maxX: 500
+        minZ: -500
+        maxZ: 500
         safe:
             x: 0
             y: 64
