@@ -1,6 +1,6 @@
-﻿message: 'You have been returned inside the border'
+﻿message: '§c-> You have been returned inside the border'
 borders:
-    worldName:
+    world:
         minX: -500
         maxX: 500
         minZ: -500

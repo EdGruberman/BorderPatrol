@@ -1,6 +1,5 @@
 name: @NAME@
-description: Limits player movement past a square boundary
-depend: [MessageManager]
+description: Limits player movement past a rectangular boundary
 version: @VERSION@
 author: @AUTHOR@
 main: @MAIN@

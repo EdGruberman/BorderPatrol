@@ -13,8 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Main extends JavaPlugin {
 
-    private static final String MINIMUM_VERSION_CONFIG = "2.0.0a0";
-    private static final String MINIMUM_VERSION_SAFETY = "2.0.0a0";
+    private static final String MINIMUM_VERSION_CONFIG = "2.1.0";
+    private static final String MINIMUM_VERSION_SAFETY = "2.1.0";
 
     @Override
     public void onEnable() {

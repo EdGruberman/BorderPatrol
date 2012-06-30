@@ -14,7 +14,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import edgruberman.bukkit.messagemanager.MessageLevel;
-import edgruberman.bukkit.messagemanager.MessageManager;
 
 /**
  * Ensures players stay within the defined borders.
@@ -80,7 +79,7 @@ final class BorderAgent implements Listener {
      */
     private Location enforce(final Player suspect, final Location breached) {
         // Notify player of breaching border
-        if (this.message != null) MessageManager.of(this.plugin).tell(suspect, this.message, MessageLevel.SEVERE, false);
+        if (this.message != null) suspect.sendMessage(this.message);
 
         // Find a safe location to return player to
         final Border border = this.engineer.getBorder(suspect.getWorld());
