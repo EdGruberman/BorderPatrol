@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
@@ -41,9 +42,17 @@ final class BorderAgent implements Listener {
     }
 
     @EventHandler
-    public void onPlayerMove(final PlayerMoveEvent event) {
-        if (event.isCancelled()) return;
+    void onPlayerRespawn(final PlayerRespawnEvent event) {
+        // Ignore if no border defined for this world or player is still inside border
+        final Border border = this.engineer.getBorder(event.getRespawnLocation().getWorld());
+        if (border == null || border.contains(event.getRespawnLocation())) return;
 
+        final Location inside = this.enforce(event.getPlayer(), event.getRespawnLocation());
+        event.setRespawnLocation(inside);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerMove(final PlayerMoveEvent event) {
         // Ignore if no border defined for destination world or player will still be inside border
         final Border border = this.engineer.getBorder(event.getTo().getWorld());
         if (border == null || border.contains(event.getTo())) return;
@@ -52,10 +61,8 @@ final class BorderAgent implements Listener {
         event.setTo(inside);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
-        if (event.isCancelled()) return;
-
         // Ignore if no border defined for destination world or player will still be inside border
         final Border border = this.engineer.getBorder(event.getTo().getWorld());
         if (border == null || border.contains(event.getTo())) return;

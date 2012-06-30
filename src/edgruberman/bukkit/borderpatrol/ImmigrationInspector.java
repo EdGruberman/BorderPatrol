@@ -35,10 +35,8 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerPortal(final PlayerPortalEvent event) {
-        if (event.isCancelled()) return;
-
         // Let normality happen if no border defined for target world
         final Border border = this.engineer.getBorder(event.getTo().getWorld());
         if (border == null) return;
