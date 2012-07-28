@@ -13,11 +13,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
-import edgruberman.bukkit.messagemanager.MessageLevel;
-
-/**
- * Ensures players stay within the defined borders.
- */
+/** Ensures players stay within the defined borders */
 final class BorderAgent implements Listener {
 
     private final Plugin plugin;
@@ -32,7 +28,7 @@ final class BorderAgent implements Listener {
     }
 
     @EventHandler
-    void onPlayerJoin(final PlayerJoinEvent event) {
+    public void onPlayerJoin(final PlayerJoinEvent event) {
         // Ignore if no border defined for this world or player is still inside border
         final Border border = this.engineer.getBorder(event.getPlayer().getWorld());
         if (border == null || border.contains(event.getPlayer().getLocation())) return;
@@ -41,7 +37,7 @@ final class BorderAgent implements Listener {
     }
 
     @EventHandler
-    void onPlayerRespawn(final PlayerRespawnEvent event) {
+    public void onPlayerRespawn(final PlayerRespawnEvent event) {
         // Ignore if no border defined for this world or player is still inside border
         final Border border = this.engineer.getBorder(event.getRespawnLocation().getWorld());
         if (border == null || border.contains(event.getRespawnLocation())) return;
@@ -71,7 +67,7 @@ final class BorderAgent implements Listener {
     }
 
     /**
-     * Return player to inside border. Notify player with message and log.
+     * Return player to inside border, notify player with message and log
      *
      * @param suspect who to return
      * @param breached where border was crossed
@@ -99,14 +95,14 @@ final class BorderAgent implements Listener {
         }
 
         // Log details for debug if configured
-        if (this.plugin.getLogger().isLoggable(MessageLevel.FINE))
-            this.plugin.getLogger().log(Level.FINE, BorderAgent.report(suspect, breached, returned));
+        if (this.plugin.getLogger().isLoggable(Level.FINE))
+            this.plugin.getLogger().fine(BorderAgent.report(suspect, breached, returned));
 
         return returned;
     }
 
     /**
-     * Generate human readable status of player.
+     * Generate human readable status of player
      *
      * @param suspect who breached the border
      * @param breached where border was crossed

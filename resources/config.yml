@@ -1,4 +1,5 @@
-﻿message: '§c-> You have been returned inside the border'
+logLevel: INFO
+message: '-> You have been §creturned inside§r the border'
 borders:
     world:
         minX: -500
@@ -9,5 +10,4 @@ borders:
             x: 0
             y: 64
             z: 0
-logLevel: INFO
 version: @VERSION@

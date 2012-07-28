@@ -4,9 +4,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-/**
- * Square region defining a boundary in a world that players are not allowed to cross.
- */
+/** Square region defining a boundary in a world that players are not allowed to cross */
 final class Border {
 
     private final World world;
