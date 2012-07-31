@@ -6,9 +6,7 @@ import java.util.Map;
 
 import org.bukkit.World;
 
-/**
- * Border identification.
- */
+/** Border identification */
 public class CivilEngineer {
 
     private final Map<World, Border> borders = new HashMap<World, Border>();

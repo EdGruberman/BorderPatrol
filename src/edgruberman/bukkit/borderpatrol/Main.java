@@ -1,12 +1,13 @@
 package edgruberman.bukkit.borderpatrol;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,21 +22,35 @@ import org.bukkit.World;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import edgruberman.bukkit.borderpatrol.commands.Reload;
 
 public final class Main extends JavaPlugin {
 
-    private static final Version MINIMUM_CONFIGURATION = new Version("2.1.0");
-    private static final Version MINIMUM_SAFETY = new Version("2.1.0");
+    private static final Version MINIMUM_CONFIGURATION = new Version("2.2.0");
+    private static final Version MINIMUM_SAFETY = new Version("2.2.0");
+
+    public static Messenger messenger;
 
     @Override
     public void onEnable() {
         this.reloadConfig();
+        Main.messenger = Messenger.load(this);
+
         this.loadSafety(this.loadConfig("safety.yml", Main.MINIMUM_SAFETY));
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));
         final CivilEngineer engineer = new CivilEngineer(borders);
-        new BorderAgent(this, engineer, this.getConfig().getString("message"));
+        new BorderAgent(this, engineer);
         new ImmigrationInspector(this, engineer);
+
+        this.getCommand("borderpatrol:reload").setExecutor(new Reload(this));
+    }
+
+    @Override
+    public void onDisable() {
+        HandlerList.unregisterAll(this);
     }
 
     private void loadSafety(final ConfigurationSection safety) {
@@ -51,7 +66,7 @@ public final class Main extends JavaPlugin {
         for (final String name : type.getStringList(entry)) {
             final Material material = Material.valueOf(name);
             if (material == null) {
-                this.getLogger().log(Level.WARNING, "Unable to determine material: " + name);
+                this.getLogger().warning("Unable to determine material: " + name);
                 continue;
             }
 
@@ -67,7 +82,7 @@ public final class Main extends JavaPlugin {
         for (final String worldName : sectionBorders.getKeys(false)) {
             final World world = this.getServer().getWorld(worldName);
             if (world == null) {
-                this.getLogger().log(Level.WARNING, "Unable to define border; World not found: " +  worldName);
+                this.getLogger().warning("Unable to define border; World not found: " +  worldName);
                 continue;
             }
 
@@ -83,7 +98,7 @@ public final class Main extends JavaPlugin {
                     , worldBorder.getInt("safe.z", 0)
             );
             borders.add(border);
-            this.getLogger().log(Level.CONFIG, border.description());
+            this.getLogger().config(border.description());
         }
         return borders;
     }
@@ -92,16 +107,14 @@ public final class Main extends JavaPlugin {
     public void reloadConfig() {
         this.saveDefaultConfig();
         super.reloadConfig();
+        this.setLogLevel(this.getConfig().getString("logLevel"));
 
         final Version version = new Version(this.getConfig().getString("version"));
-        if (version.compareTo(Main.MINIMUM_CONFIGURATION) >= 0) {
-            this.setLogLevel(this.getConfig().getString("logLevel"));
-            return;
-        }
+        if (version.compareTo(Main.MINIMUM_CONFIGURATION) >= 0) return;
 
         this.archiveConfig("config.yml", version);
         this.saveDefaultConfig();
-        super.reloadConfig();
+        this.reloadConfig();
     }
 
     @Override
@@ -120,6 +133,29 @@ public final class Main extends JavaPlugin {
         this.getLogger().warning("Archived configuration file \"" + existing.getPath() + "\" with version \"" + version + "\" to \"" + backup.getPath() + "\"");
     }
 
+    private void extractConfig(final String resource, final boolean replace) {
+        final Charset source = Charset.forName("UTF-8");
+        final Charset target = Charset.defaultCharset();
+        if (target.equals(source)) {
+            super.saveResource(resource, replace);
+            return;
+        }
+
+        final File config = new File(this.getDataFolder(), resource);
+        if (config.exists()) return;
+
+        final char[] cbuf = new char[1024]; int read;
+        try {
+            final Reader in = new BufferedReader(new InputStreamReader(this.getResource(resource), source));
+            final Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(config), target));
+            while((read = in.read(cbuf)) > 0) out.write(cbuf, 0, read);
+            out.close(); in.close();
+
+        } catch (final Exception e) {
+            throw new IllegalArgumentException("Could not extract configuration file \"" + resource + "\" to " + config.getPath() + "\";" + e.getClass().getName() + ": " + e.getMessage());
+        }
+    }
+
     private Configuration loadConfig(final String resource, final Version required) {
         // Extract default if not existing
         this.extractConfig(resource, false);
@@ -136,29 +172,6 @@ public final class Main extends JavaPlugin {
 
         // Extract default and reload
         return this.loadConfig(resource, null);
-    }
-
-    private void extractConfig(final String resource, final boolean replace) {
-        final Charset source = Charset.forName("UTF-8");
-        final Charset target = Charset.defaultCharset();
-        if (target.equals(source)) {
-            super.saveResource(resource, replace);
-            return;
-        }
-
-        final File config = new File(this.getDataFolder(), resource);
-        if (config.exists()) return;
-
-        final byte[] buffer = new byte[1024]; int read;
-        try {
-            final InputStream in = new BufferedInputStream(this.getResource(resource));
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(config));
-            while((read = in.read(buffer)) > 0) out.write(target.encode(source.decode(ByteBuffer.wrap(buffer, 0, read))).array());
-            out.close(); in.close();
-
-        } catch (final Exception e) {
-            throw new IllegalArgumentException("Could not extract configuration file \"" + resource + "\" to " + config.getPath() + "\";" + e.getClass().getName() + ": " + e.getMessage());
-        }
     }
 
     private void setLogLevel(final String name) {

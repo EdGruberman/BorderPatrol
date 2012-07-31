@@ -22,7 +22,7 @@ import org.bukkit.plugin.Plugin;
 
 /**
  * Replacement for PortalTravelAgent that ensures portals are only
- * found and created within borders.
+ * found and created within borders
  */
 final class ImmigrationInspector implements TravelAgent, Listener {
 

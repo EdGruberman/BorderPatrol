@@ -7,28 +7,22 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 /**
- * Utility class for finding safe locations for players.
+ * Utility class for finding safe locations for players
  * TODO move safety related methods from Border into here and remove static nature
  */
 final class SafetyOfficer {
 
-    /**
-     *  Materials safe for a player to occupy.
-     */
+    /**  Materials safe for a player to occupy */
     static Set<Integer> safeContainers = new HashSet<Integer>();
 
-    /**
-     * Materials safe for a player to occupy and be placed above.
-     */
+    /** Materials safe for a player to occupy and be placed above */
     static Set<Integer> safeMaterials = new HashSet<Integer>();
 
-    /**
-     * Materials unsafe for a player to be placed above and not in safeContainers.
-     */
+    /** Materials unsafe for a player to be placed above and not in safeContainers */
     static Set<Integer> unsafeSupports = new HashSet<Integer>();
 
     /**
-     * Find the closest safe block for a player to occupy along the Y axis.
+     * Find the closest safe block for a player to occupy along the Y axis
      *
      * @param location initial start to search up and down from
      * @return closest safe spot for a player to occupy
@@ -71,7 +65,7 @@ final class SafetyOfficer {
     }
 
     /**
-     * Check if the block itself and the block above it are safe containers while the block below it is also safe support.
+     * Check if the block itself and the block above it are safe containers while the block below it is also safe support
      *
      * @param world where coordinates exist
      * @param x X axis coordinate

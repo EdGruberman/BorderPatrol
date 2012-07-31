@@ -18,12 +18,10 @@ final class BorderAgent implements Listener {
 
     private final Plugin plugin;
     private final CivilEngineer engineer;
-    private final String message;
 
-    BorderAgent(final Plugin plugin, final CivilEngineer engineer, final String message) {
+    BorderAgent(final Plugin plugin, final CivilEngineer engineer) {
         this.plugin = plugin;
         this.engineer = engineer;
-        this.message = message;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -75,7 +73,7 @@ final class BorderAgent implements Listener {
      */
     private Location enforce(final Player suspect, final Location breached) {
         // Notify player of breaching border
-        if (this.message != null) suspect.sendMessage(this.message);
+        Main.messenger.tell(suspect, "return");
 
         // Find a safe location to return player to
         final Border border = this.engineer.getBorder(suspect.getWorld());

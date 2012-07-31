@@ -34,7 +34,7 @@ final class Border {
     }
 
     /**
-     * Generates text describing this border's configuration.
+     * Generates text describing this border's configuration
      *
      * @return border configuration in human readable format
      */
@@ -46,7 +46,7 @@ final class Border {
     }
 
     /**
-     * Determines if chunk has any block that is found within or on the border.
+     * Determines if chunk has any block that is found within or on the border
      *
      * @param c chunk to check
      * @return true if chunk has a block inside border; otherwise false
@@ -62,7 +62,7 @@ final class Border {
     }
 
     /**
-     * Determines if location is found within or on the border.
+     * Determines if location is found within or on the border
      *
      * @param l location to check
      * @return true if location is inside border; otherwise false
@@ -72,7 +72,7 @@ final class Border {
     }
 
     /**
-     * Determines if coordinates are found within or on the border.
+     * Determines if coordinates are found within or on the border
      *
      * @param x X axis value
      * @param z Z axis value
@@ -83,7 +83,7 @@ final class Border {
     }
 
     /**
-     * Returns the closest location to the target inside the border.
+     * Returns the closest location to the target inside the border
      *
      * @param target location to try and get closest to
      * @param padding margin from border
@@ -107,8 +107,9 @@ final class Border {
 
     /**
      * Attempts to find a player safe location inside the border closest to the
-     * given target. If a safe location can not be found, the default safe
-     * location for this border is used.
+     * given target
+     * If a safe location can not be found, the default safe location for this
+     * border is used
      *
      * @param target location to try and find the closest safe location to
      * @return safe location inside border closest to target
