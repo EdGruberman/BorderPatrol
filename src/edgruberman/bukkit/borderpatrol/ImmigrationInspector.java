@@ -93,7 +93,10 @@ final class ImmigrationInspector implements TravelAgent, Listener {
     public Location findOrCreate(final Location destination) {
         // Ensure destination chunks will load while searching
         final WorldServer worldServer = ((CraftWorld) destination.getWorld()).getHandle();
-        worldServer.chunkProviderServer.forceChunkLoad = true;
+        final boolean wasEnabled = worldServer.chunkProviderServer.forceChunkLoad;
+        if (!wasEnabled) {
+            worldServer.chunkProviderServer.forceChunkLoad = true;
+        }
 
         // Search for existing portal within border
         this.plugin.getLogger().log(Level.FINEST, "Attempting to locate an existing portal near " + ImmigrationInspector.describeLocation(destination));
@@ -118,7 +121,9 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         }
 
         // Return chunks to normal loading procedure
-        worldServer.chunkProviderServer.forceChunkLoad = false;
+        if (!wasEnabled) {
+            worldServer.chunkProviderServer.forceChunkLoad = false;
+        }
 
         return result;
     }
@@ -170,7 +175,6 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                 final double dZ = z + 0.5D - location.getZ();
 
                 for (int y = this.getWorldHeight(world) - 1; y >= 0; --y) {
-                    // Using (world.getBlock(x, y, z).getType() == Material.PORTAL) leaked memory
                     if (world.getBlockTypeIdAt(x, y, z) != Material.PORTAL.getId()) continue;
 
                     while (world.getBlockTypeIdAt(x, y - 1, z) == Material.PORTAL.getId()) --y;
