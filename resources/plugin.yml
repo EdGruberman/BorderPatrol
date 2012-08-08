@@ -1,5 +1,6 @@
 name: @NAME@
 description: Limits player movement past a rectangular boundary
+softdepend: [TimeService]
 version: @VERSION@
 author: @AUTHOR@
 main: @MAIN@
@@ -7,6 +8,7 @@ commands:
     'borderpatrol:reload':
         description: Reload BorderPatrol plugin
         permission: borderpatrol.reload
+        usage: /<command>
 permissions:
     borderpatrol.reload:
         description: Can use reload command
