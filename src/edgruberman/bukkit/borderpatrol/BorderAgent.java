@@ -73,7 +73,7 @@ final class BorderAgent implements Listener {
      */
     private Location enforce(final Player suspect, final Location breached) {
         // Notify player of breaching border
-        Main.messenger.tell(suspect, "return");
+        Main.courier.send(suspect, "return");
 
         // Find a safe location to return player to
         final Border border = this.engineer.getBorder(suspect.getWorld());

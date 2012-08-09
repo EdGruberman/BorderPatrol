@@ -26,18 +26,20 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import edgruberman.bukkit.borderpatrol.commands.Reload;
+import edgruberman.bukkit.messaging.couriers.ConfigurationCourier;
+import edgruberman.bukkit.messaging.couriers.TimestampedConfigurationCourier;
 
 public final class Main extends JavaPlugin {
 
     private static final Version MINIMUM_CONFIGURATION = new Version("2.2.0");
     private static final Version MINIMUM_SAFETY = new Version("2.2.0");
 
-    public static Messenger messenger;
+    public static ConfigurationCourier courier;
 
     @Override
     public void onEnable() {
         this.reloadConfig();
-        Main.messenger = Messenger.load(this);
+        Main.courier = new TimestampedConfigurationCourier(this);
 
         this.loadSafety(this.loadConfig("safety.yml", Main.MINIMUM_SAFETY));
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));
