@@ -26,8 +26,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import edgruberman.bukkit.borderpatrol.commands.Reload;
-import edgruberman.bukkit.messaging.couriers.ConfigurationCourier;
-import edgruberman.bukkit.messaging.couriers.TimestampedConfigurationCourier;
+import edgruberman.bukkit.borderpatrol.messaging.couriers.ConfigurationCourier;
+import edgruberman.bukkit.borderpatrol.messaging.couriers.TimestampedConfigurationCourier;
 
 public final class Main extends JavaPlugin {
 
