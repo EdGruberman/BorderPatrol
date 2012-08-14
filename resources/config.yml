@@ -1,6 +1,6 @@
 logLevel: INFO
 return: '-> You have been §creturned inside§r the border'
-reload: '-> BorderPatrol plugin §2reloaded'
+reload: '-> {1} plugin §2reloaded' # 1 = Plugin
 borders:
     world:
         minX: -500

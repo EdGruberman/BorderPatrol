@@ -1,6 +1,5 @@
 name: @NAME@
 description: Limits player movement past a rectangular boundary
-softdepend: [TimeService]
 version: @VERSION@
 author: @AUTHOR@
 main: @MAIN@

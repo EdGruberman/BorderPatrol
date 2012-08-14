@@ -31,7 +31,7 @@ import edgruberman.bukkit.borderpatrol.messaging.couriers.TimestampedConfigurati
 
 public final class Main extends JavaPlugin {
 
-    private static final Version MINIMUM_CONFIGURATION = new Version("2.2.0");
+    private static final Version MINIMUM_CONFIGURATION = new Version("2.4.0");
     private static final Version MINIMUM_SAFETY = new Version("2.2.0");
 
     public static ConfigurationCourier courier;
