@@ -1,5 +1,4 @@
-package edgruberman.bukkit.borderpatrol;
-
+package edgruberman.bukkit.borderpatrol.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
