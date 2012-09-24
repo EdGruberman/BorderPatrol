@@ -22,7 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * @author EdGruberman (ed@rjump.com)
- * @version 1.0.1
+ * @version 1.0.3
  */
 public class CustomPlugin extends JavaPlugin {
 
@@ -91,14 +91,10 @@ public class CustomPlugin extends JavaPlugin {
 
     public void extractConfig(final String resource, final boolean replace) {
         final Charset target = Charset.defaultCharset();
-        if (target.equals(CustomPlugin.CONFIGURATION_SOURCE)) {
-            super.saveResource(resource, replace);
-            return;
-        }
-
         final File config = new File(this.getDataFolder(), resource);
-        if (config.exists()) return;
+        if (config.exists() && !replace) return;
 
+        this.getLogger().log(Level.FINE, "Extracting configuration file {1} {0} as {2}", new Object[] { resource, CustomPlugin.CONFIGURATION_SOURCE.name(), target.name() });
         config.getParentFile().mkdirs();
 
         final char[] cbuf = new char[1024]; int read;
@@ -135,7 +131,7 @@ public class CustomPlugin extends JavaPlugin {
             if (h.getLevel().intValue() > level.intValue()) h.setLevel(level);
 
         this.getLogger().setLevel(level);
-        this.getLogger().log(Level.CONFIG, "Log level set to: {0} ({1})"
+        this.getLogger().log(Level.CONFIG, "Log level set to: {0} ({1,number,#})"
                 , new Object[] { this.getLogger().getLevel(), this.getLogger().getLevel().intValue() });
     }
 

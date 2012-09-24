@@ -1,6 +1,6 @@
 safeContainers: # Materials safe for a player to occupy
-    - SNOW
     - AIR
+    - SNOW
     - SAPLING
     - YELLOW_FLOWER
     - RED_ROSE
@@ -15,9 +15,7 @@ safeContainers: # Materials safe for a player to occupy
     - RAILS
     - WALL_SIGN
     - LEVER
-    - STONE_PLATE
     - IRON_DOOR_BLOCK
-    - WOOD_PLATE
     - REDSTONE_TORCH_OFF
     - REDSTONE_TORCH_ON
     - STONE_BUTTON
@@ -29,7 +27,6 @@ safeContainers: # Materials safe for a player to occupy
     - LONG_GRASS
     - DEAD_BUSH
     - WEB
-    - TRAP_DOOR
     - PUMPKIN_STEM
     - MELON_STEM
     - VINE
@@ -43,4 +40,9 @@ unsafeSupports: # Materials unsafe for a player to be placed above and not in sa
     - CACTUS
     - FIRE
     - ENDER_PORTAL
+    - TRIPWIRE_HOOK
+    - TRIPWIRE
+    - WOOD_PLATE
+    - STONE_PLATE
+    - TRAP_DOOR
 version: @VERSION@
