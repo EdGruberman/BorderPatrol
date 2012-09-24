@@ -1,8 +1,9 @@
-name: @NAME@
-description: Limits player movement past a rectangular boundary
+name: BorderPatrol
 version: @VERSION@
-author: @AUTHOR@
-main: @MAIN@
+description: Limits player movement past a rectangular boundary
+author: EdGruberman (ed@rjump.com)
+website: http://github.com/EdGruberman/BorderPatrol
+main: edgruberman.bukkit.borderpatrol.Main
 commands:
     'borderpatrol:reload':
         description: Reload BorderPatrol plugin
