@@ -3,8 +3,8 @@ package edgruberman.bukkit.borderpatrol;
 import java.util.Random;
 import java.util.logging.Level;
 
-import net.minecraft.server.MathHelper;
-import net.minecraft.server.WorldServer;
+import net.minecraft.server.v1_4_5.MathHelper;
+import net.minecraft.server.v1_4_5.WorldServer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,7 +13,7 @@ import org.bukkit.TravelAgent;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.v1_4_5.CraftWorld;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -224,7 +224,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
     public boolean createPortal(final Location location) {
         final World world = location.getWorld();
         final Border border = this.engineer.getBorder(world);
-        final net.minecraft.server.World nmsWorld = ((org.bukkit.craftbukkit.CraftWorld) world).getHandle();
+        final net.minecraft.server.v1_4_5.World nmsWorld = ((org.bukkit.craftbukkit.v1_4_5.CraftWorld) world).getHandle();
 
         if (location.getWorld().getEnvironment() == Environment.THE_END) {
             final int i = MathHelper.floor(location.getBlockX());
