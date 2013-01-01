@@ -3,6 +3,9 @@ package edgruberman.bukkit.borderpatrol;
 import java.util.logging.Level;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World.Environment;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,6 +13,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
@@ -18,10 +22,12 @@ final class BorderAgent implements Listener {
 
     private final Plugin plugin;
     private final CivilEngineer engineer;
+    private final boolean netherRoof;
 
-    BorderAgent(final Plugin plugin, final CivilEngineer engineer) {
+    BorderAgent(final Plugin plugin, final CivilEngineer engineer, final boolean netherRoof) {
         this.plugin = plugin;
         this.engineer = engineer;
+        this.netherRoof = netherRoof;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -45,23 +51,37 @@ final class BorderAgent implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onPlayerMove(final PlayerMoveEvent event) {
-        // Ignore if no border defined for destination world or player will still be inside border
-        final Border border = this.engineer.getBorder(event.getTo().getWorld());
-        if (border == null || border.contains(event.getTo())) return;
+    public void onPlayerMove(final PlayerMoveEvent move) {
+        if (!this.netherRoof
+                && move.getTo().getWorld().getEnvironment() == Environment.NETHER
+                && move.getTo().getBlockY() >= 128
+                && move.getPlayer().getFireTicks() <= 0)
+            move.getTo().getBlock().setType(Material.FIRE);
 
-        final Location inside = this.enforce(event.getPlayer(), event.getTo());
-        event.setTo(inside);
+        // Ignore if no border defined for destination world or player will still be inside border
+        final Border border = this.engineer.getBorder(move.getTo().getWorld());
+        if (border == null || border.contains(move.getTo())) return;
+
+        final Location inside = this.enforce(move.getPlayer(), move.getTo());
+        move.setTo(inside);
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onPlayerTeleport(final PlayerTeleportEvent event) {
+    public void onPlayerTeleport(final PlayerTeleportEvent teleport) {
         // Ignore if no border defined for destination world or player will still be inside border
-        final Border border = this.engineer.getBorder(event.getTo().getWorld());
-        if (border == null || border.contains(event.getTo())) return;
+        final Border border = this.engineer.getBorder(teleport.getTo().getWorld());
+        if (border == null || border.contains(teleport.getTo())) return;
 
-        final Location inside = this.enforce(event.getPlayer(), event.getTo());
-        event.setTo(inside);
+        final Location inside = this.enforce(teleport.getPlayer(), teleport.getTo());
+        teleport.setTo(inside);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPortalCreate(final PortalCreateEvent create) {
+        if (this.netherRoof || create.getWorld().getEnvironment() != Environment.NETHER) return;
+        for (final Block block : create.getBlocks())
+            if (block.getY() > 128)
+                create.setCancelled(true);
     }
 
     /**

@@ -20,7 +20,7 @@ public final class Main extends CustomPlugin {
 
     @Override
     public void onLoad() {
-        this.putConfigMinimum("2.4.0");
+        this.putConfigMinimum("2.6.0");
         this.putConfigMinimum("safety.yml", "2.4.3");
     }
 
@@ -32,7 +32,7 @@ public final class Main extends CustomPlugin {
         this.loadSafety(this.loadConfig("safety.yml"));
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));
         final CivilEngineer engineer = new CivilEngineer(borders);
-        new BorderAgent(this, engineer);
+        new BorderAgent(this, engineer, this.getConfig().getBoolean("nether-roof"));
         new ImmigrationInspector(this, engineer);
 
         this.getCommand("borderpatrol:reload").setExecutor(new Reload(this));
