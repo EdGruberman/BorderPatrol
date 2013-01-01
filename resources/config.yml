@@ -1,6 +1,6 @@
-logLevel: INFO
-return: '-> You have been §creturned inside§r the border'
-reload: '-> {1} plugin §2reloaded' # 1 = Plugin
+log-level: INFO
+return: '§f-> You have been §creturned inside§r the border'
+reload: '§f-> §2Reloaded §7{1} plugin' # 1 = Plugin Name
 borders:
     world:
         minX: -500

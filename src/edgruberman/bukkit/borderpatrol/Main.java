@@ -12,23 +12,22 @@ import org.bukkit.event.HandlerList;
 
 import edgruberman.bukkit.borderpatrol.commands.Reload;
 import edgruberman.bukkit.borderpatrol.messaging.ConfigurationCourier;
-import edgruberman.bukkit.borderpatrol.messaging.Courier;
 import edgruberman.bukkit.borderpatrol.util.CustomPlugin;
 
 public final class Main extends CustomPlugin {
 
-    public static Courier courier;
+    public static ConfigurationCourier courier;
 
     @Override
     public void onLoad() {
-        this.putConfigMinimum(CustomPlugin.CONFIGURATION_FILE, "2.4.0");
+        this.putConfigMinimum("2.4.0");
         this.putConfigMinimum("safety.yml", "2.4.3");
     }
 
     @Override
     public void onEnable() {
         this.reloadConfig();
-        Main.courier = new ConfigurationCourier(this);
+        Main.courier = ConfigurationCourier.Factory.create(this).build();
 
         this.loadSafety(this.loadConfig("safety.yml"));
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));

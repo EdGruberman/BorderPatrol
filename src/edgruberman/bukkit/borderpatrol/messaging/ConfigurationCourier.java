@@ -1,9 +1,7 @@
 package edgruberman.bukkit.borderpatrol.messaging;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
@@ -12,18 +10,12 @@ import org.bukkit.plugin.Plugin;
  * uses message patterns stored in a {@link org.bukkit.configuration.ConfigurationSection ConfigurationSection}
  *
  * @author EdGruberman (ed@rjump.com)
- * @version 2.0.0
+ * @version 5.0.0
  */
 public class ConfigurationCourier extends Courier {
 
-    /** section containing message patterns; null if basePath should be used */
+    /** section containing message patterns */
     protected final ConfigurationSection base;
-
-    /** prepends a timestamp to all messages and uses plugin root configuration for message patterns */
-    public ConfigurationCourier(final Plugin plugin) {
-        super(plugin);
-        this.base = this.plugin.getConfig();
-    }
 
     protected ConfigurationCourier(final ConfigurationCourier.Factory parameters) {
         super(parameters);
@@ -35,35 +27,46 @@ public class ConfigurationCourier extends Courier {
         return this.base;
     }
 
-    @Override
-    public List<Message> draft(final String key, final Object... arguments) {
-        if (this.base.isString(key))
-            return super.draft(this.base.getString(key), arguments);
-
-        if (!this.base.isList(key)) return Collections.emptyList();
-
-        final List<Message> messages = new ArrayList<Message>();
-        for (final String item : this.base.getStringList(key)) {
-            if (item == null) continue;
-
-            final Message.Factory factory = Message.Factory.create(item, arguments);
-            if (this.timestamp) factory.timestamp();
-            messages.add(factory.build());
-        }
-        return messages;
+    /**
+     * preliminary Message construction before formatting for target recipient (timestamp argument prepended if configured)
+     *
+     * @param key path to message text that can contain format elements in base configuration
+     */
+    public Message compose(final String key, final Object... arguments) {
+        return this.draft(this.base.getString(key), arguments);
     }
 
     /**
      * retrieve a message pattern from the configuration and format with supplied arguments
      *
-     * @param key path to message pattern stored in configuration base
+     * @param key relative path from base to pattern
      */
     @Override
     public String format(final String key, final Object... arguments) {
         return super.format(this.getBase().getString(key), arguments);
     }
 
+    public void send(final CommandSender target, final String key, final Object... arguments) {
+        this.sendMessage(target, this.base.getString(key), arguments);
+    }
 
+    public void broadcast(final String key, final Object... arguments) {
+        this.broadcastMessage(this.base.getString(key), arguments);
+    }
+
+    public void world(final World target, final String key, final Object... arguments) {
+        this.worldMessage(target, this.base.getString(key), arguments);
+    }
+
+    public void publish(final String permission, final String key, final Object... arguments) {
+        this.publishMessage(permission, this.base.getString(key), arguments);
+    }
+
+
+
+    public static Factory create(final Plugin plugin) {
+        return Factory.create(plugin);
+    }
 
     public static class Factory extends Courier.Factory {
 
@@ -79,15 +82,38 @@ public class ConfigurationCourier extends Courier {
             this.setBase(plugin.getConfig());
         }
 
-        /** @param path path to section in plugin configuration containing message patterns */
-        public Factory setBase(final String path) {
-            this.base = this.plugin.getConfig().getConfigurationSection(path);
+        /** @param section base section containing message patterns */
+        public Factory setBase(final ConfigurationSection section) {
+            if (section == null) throw new IllegalArgumentException("ConfigurationSection can not be null");
+            this.base = section;
             return this;
         }
 
-        /** @param section base section containing message patterns */
-        public Factory setBase(final ConfigurationSection section) {
-            this.base = section;
+        /** @param path path to section relative to current base section containing message patterns */
+        public Factory setPath(final String path) {
+            final ConfigurationSection section = this.base.getConfigurationSection(path);
+            if (section == null) throw new IllegalArgumentException("ConfigurationSection not found: " + path);
+            this.setBase(section);
+            return this;
+        }
+
+        /** @param key path to color code prefix character in base configuration */
+        public Factory setColorCode(final String key) {
+            final String value = this.base.getString(key);
+            if (value == null) throw new IllegalArgumentException("Color code not found: " + this.base.getCurrentPath() + this.base.getRoot().options().pathSeparator() + key);
+            this.setColorCode(value.charAt(0));
+            return this;
+        }
+
+        @Override
+        public Factory setTimestamp(final boolean timestamp) {
+            super.setTimestamp(timestamp);
+            return this;
+        }
+
+        @Override
+        public Factory setColorCode(final char colorCode) {
+            super.setColorCode(colorCode);
             return this;
         }
 
