@@ -3,8 +3,6 @@ package edgruberman.bukkit.borderpatrol;
 import java.util.Random;
 import java.util.logging.Level;
 
-import net.minecraft.server.v1_4_6.WorldServer;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,12 +10,13 @@ import org.bukkit.TravelAgent;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_4_6.CraftWorld;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.plugin.Plugin;
+
+import edgruberman.bukkit.borderpatrol.craftbukkit.CraftBukkit;
 
 /**
  * Replacement for PortalTravelAgent that ensures portals are only
@@ -27,11 +26,13 @@ final class ImmigrationInspector implements TravelAgent, Listener {
 
     private final Plugin plugin;
     private final CivilEngineer engineer;
+    private final CraftBukkit cb;
 
-    ImmigrationInspector(final Plugin plugin, final CivilEngineer engineer) {
+    ImmigrationInspector(final Plugin plugin, final CivilEngineer engineer, final CraftBukkit cb) {
         this.plugin = plugin;
         this.engineer = engineer;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.cb = cb;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -91,11 +92,8 @@ final class ImmigrationInspector implements TravelAgent, Listener {
     @Override
     public Location findOrCreate(final Location destination) {
         // Ensure destination chunks will load while searching
-        final WorldServer worldServer = ((CraftWorld) destination.getWorld()).getHandle();
-        final boolean wasEnabled = worldServer.chunkProviderServer.forceChunkLoad;
-        if (!wasEnabled) {
-            worldServer.chunkProviderServer.forceChunkLoad = true;
-        }
+        final boolean wasEnabled = this.cb.getForceChunkLoad(destination.getWorld());
+        if (!wasEnabled) this.cb.setForceChunkLoad(destination.getWorld(), true);
 
         // Search for existing portal within border
         this.plugin.getLogger().log(Level.FINEST, "Attempting to locate an existing portal near " + ImmigrationInspector.describeLocation(destination));
@@ -120,9 +118,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         }
 
         // Return chunks to normal loading procedure
-        if (!wasEnabled) {
-            worldServer.chunkProviderServer.forceChunkLoad = false;
-        }
+        if (!wasEnabled) this.cb.setForceChunkLoad(destination.getWorld(), false);
 
         return result;
     }
@@ -223,7 +219,6 @@ final class ImmigrationInspector implements TravelAgent, Listener {
     public boolean createPortal(final Location location) {
         final World world = location.getWorld();
         final Border border = this.engineer.getBorder(world);
-        final net.minecraft.server.v1_4_6.World nmsWorld = ((CraftWorld) world).getHandle();
 
         if (location.getWorld().getEnvironment() == Environment.THE_END) {
             final int i = ImmigrationInspector.floor(location.getBlockX());
@@ -305,7 +300,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                                     k4 = l2 + j4;
                                     final int l4 = j2 + (k3 - 1) * i3 - l3 * j3;
 
-                                    if (j4 < 0 && !nmsWorld.getMaterial(i4, k4, l4).isBuildable() || j4 >= 0 && !world.getBlockAt(i4, k4, l4).isEmpty()) {
+                                    if (j4 < 0 && !this.cb.isBuildable(world, i4, k4, l4) || j4 >= 0 && !world.getBlockAt(i4, k4, l4).isEmpty()) {
                                         continue label271;
                                     }
                                 }
@@ -352,7 +347,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
                                     j4 = i2 + (l3 - 1) * j3;
                                     i4 = l2 + k3;
                                     k4 = j2 + (l3 - 1) * i3;
-                                    if (k3 < 0 && !nmsWorld.getMaterial(j4, i4, k4).isBuildable() || k3 >= 0 && !world.getBlockAt(j4, i4, k4).isEmpty()) {
+                                    if (k3 < 0 && !this.cb.isBuildable(world, j4, i4, k4) || k3 >= 0 && !world.getBlockAt(j4, i4, k4).isEmpty()) {
                                         continue label219;
                                     }
                                 }

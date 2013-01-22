@@ -5,12 +5,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.HandlerList;
 
 import edgruberman.bukkit.borderpatrol.commands.Reload;
+import edgruberman.bukkit.borderpatrol.craftbukkit.CraftBukkit;
 import edgruberman.bukkit.borderpatrol.messaging.ConfigurationCourier;
 import edgruberman.bukkit.borderpatrol.util.CustomPlugin;
 
@@ -26,6 +28,17 @@ public final class Main extends CustomPlugin {
 
     @Override
     public void onEnable() {
+        // establish version support for CraftBukkit obc/nms access
+        CraftBukkit cb;
+        try {
+            cb = CraftBukkit.create();
+        } catch (final Exception e) {
+            this.getLogger().severe("Unsupported CraftBukkit version " + Bukkit.getVersion() + "; " + e);
+            this.getLogger().severe("Disabling plugin; Check " + this.getDescription().getWebsite() + " for updates");
+            this.setEnabled(false);
+            return;
+        }
+
         this.reloadConfig();
         Main.courier = ConfigurationCourier.Factory.create(this).build();
 
@@ -33,7 +46,7 @@ public final class Main extends CustomPlugin {
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));
         final CivilEngineer engineer = new CivilEngineer(borders);
         new BorderAgent(this, engineer, this.getConfig().getBoolean("nether-roof"));
-        new ImmigrationInspector(this, engineer);
+        new ImmigrationInspector(this, engineer, cb);
 
         this.getCommand("borderpatrol:reload").setExecutor(new Reload(this));
     }
