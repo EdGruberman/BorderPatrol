@@ -35,9 +35,18 @@ final class SafetyOfficer {
         final int z = safe.getBlockZ();
 
         // Chunk must be loaded in order to return proper type IDs
-        if (!world.isChunkLoaded(x >> 4, z >> 4)) world.loadChunk(x >> 4, z >> 4);
+        boolean loaded = false;
+        final int cx = x >> 4;
+        final int cz = x >> 4;
+        if (!world.isChunkLoaded(cx, cz)) {
+            world.loadChunk(cx, cz);
+            loaded = true;
+        }
 
-        if (SafetyOfficer.isSafe(world, x, y ,z)) return safe;
+        if (SafetyOfficer.isSafe(world, x, y ,z)) {
+            if (loaded) world.unloadChunk(cx, cz);
+            return safe;
+        }
 
         final int bottom = 0, top = world.getMaxHeight() - 1;
         int below = y, above = y++;
@@ -46,6 +55,7 @@ final class SafetyOfficer {
             if (below >= bottom) {
                 if (SafetyOfficer.isSafe(world, x, below, z)) {
                     safe.setY(below);
+                    if (loaded) world.unloadChunk(cx, cz);
                     return safe;
                 }
                 below--;
@@ -54,6 +64,7 @@ final class SafetyOfficer {
             if (above <= top) {
                 if (SafetyOfficer.isSafe(world, x, above, z)) {
                     safe.setY(above);
+                    if (loaded) world.unloadChunk(cx, cz);
                     return safe;
                 }
                 above++;
@@ -61,6 +72,7 @@ final class SafetyOfficer {
 
         }
 
+        if (loaded) world.unloadChunk(cx, cz);
         return null;
     }
 
