@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 
 /**
  * Utility class for finding safe locations for players
@@ -48,7 +49,7 @@ final class SafetyOfficer {
             return safe;
         }
 
-        final int bottom = 0, top = world.getMaxHeight() - 1;
+        final int bottom = 0, top = ( world.getEnvironment() == Environment.NETHER ? 128 : 256 ) - 1;
         int below = y, above = y++;
         while ((below > bottom) || (above < top)) {
 
