@@ -1,6 +1,6 @@
 log-level: INFO
 nether-roof: true
-return: '§f-> You have been §creturned inside§r the border'
+return: '§f-> You have been §creturned inside§f the border'
 reload: '§f-> §2Reloaded §7{1} plugin' # 1 = Plugin Name
 borders:
     world:
