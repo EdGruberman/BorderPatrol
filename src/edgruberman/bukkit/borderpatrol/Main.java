@@ -13,7 +13,7 @@ import org.bukkit.event.HandlerList;
 
 import edgruberman.bukkit.borderpatrol.commands.Reload;
 import edgruberman.bukkit.borderpatrol.craftbukkit.CraftBukkit;
-import edgruberman.bukkit.borderpatrol.messaging.ConfigurationCourier;
+import edgruberman.bukkit.borderpatrol.messaging.Courier.ConfigurationCourier;
 import edgruberman.bukkit.borderpatrol.util.CustomPlugin;
 
 public final class Main extends CustomPlugin {
@@ -22,7 +22,7 @@ public final class Main extends CustomPlugin {
 
     @Override
     public void onLoad() {
-        this.putConfigMinimum("2.6.0");
+        this.putConfigMinimum("2.9.0");
         this.putConfigMinimum("safety.yml", "2.4.3");
     }
 
@@ -40,7 +40,7 @@ public final class Main extends CustomPlugin {
         }
 
         this.reloadConfig();
-        Main.courier = ConfigurationCourier.Factory.create(this).build();
+        Main.courier = ConfigurationCourier.create(this).setFormatCode("format-code").build();
 
         this.loadSafety(this.loadConfig("safety.yml"));
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));
@@ -54,6 +54,7 @@ public final class Main extends CustomPlugin {
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
+        Main.courier = null;
     }
 
     private void loadSafety(final ConfigurationSection safety) {

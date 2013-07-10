@@ -1,15 +1,16 @@
 log-level: INFO
 nether-roof: true
-return: '§f-> You have been §creturned inside§f the border'
-reload: '§f-> §2Reloaded §7{1} plugin' # 1 = Plugin Name
+format-code: '§'
+return: '§f-> You have been §creturned inside§f the border' # 0 = generated
+reload: '§f-> §2Reloaded §7{1} plugin' # 0 = generated, 1 = plugin name
 borders:
-    world:
-        minX: -500
-        maxX: 500
-        minZ: -500
-        maxZ: 500
-        safe:
-            x: 0
-            y: 64
-            z: 0
+  world:
+    minX: -500
+    maxX: 500
+    minZ: -500
+    maxZ: 500
+    safe:
+      x: 0
+      y: 64
+      z: 0
 version: @VERSION@
