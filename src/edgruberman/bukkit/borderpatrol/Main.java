@@ -64,6 +64,7 @@ public final class Main extends CustomPlugin {
         this.loadMaterials(safety, "unsafeSupports", SafetyOfficer.unsafeSupports);
     }
 
+    @SuppressWarnings("deprecation")
     private void loadMaterials(final ConfigurationSection type, final String entry, final Set<Integer> materials) {
         if (!type.isSet(entry)) return;
 

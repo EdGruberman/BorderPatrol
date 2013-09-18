@@ -86,6 +86,7 @@ final class SafetyOfficer {
      * @param z Z axis coordinate
      * @return true if coordinates are safe for a player to be moved to; false otherwise
      */
+    @SuppressWarnings("deprecation")
     private static boolean isSafe(final World world, final int x, final int y, final int z) {
         final int below = world.getBlockTypeIdAt(x, y - 1, z);
         return (SafetyOfficer.safeMaterials.contains(below)                                    //     Below is safe to be placed above

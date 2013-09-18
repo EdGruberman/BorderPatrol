@@ -123,6 +123,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         return result;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Location findPortal(final Location location) {
         final World world = location.getWorld();
@@ -215,6 +216,7 @@ final class ImmigrationInspector implements TravelAgent, Listener {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean createPortal(final Location location) {
         final World world = location.getWorld();
