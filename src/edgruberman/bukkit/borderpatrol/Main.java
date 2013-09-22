@@ -40,7 +40,7 @@ public final class Main extends CustomPlugin {
         }
 
         this.reloadConfig();
-        Main.courier = ConfigurationCourier.create(this).setFormatCode("format-code").build();
+        Main.courier = ConfigurationCourier.Factory.create(this).setFormatCode("format-code").build();
 
         this.loadSafety(this.loadConfig("safety.yml"));
         final List<Border> borders = this.loadBorders(this.getConfig().getConfigurationSection("borders"));
